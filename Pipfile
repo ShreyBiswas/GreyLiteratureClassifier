@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+nltk = "*"
+pandas = "*"
+tqdm = "*"
+iprogress = "*"
+ipywidgets = "*"
+scikit-learn = "*"
+pymupdf = "*"
+bs4 = "*"
+matplotlib = "*"
+setuptools = "*"
+wheel = "*"
+cupy-cuda12x = "*"
+requests = "*"
+pip = "*"
+spacy = {extras = ["cuda12x", "lookups", "transformers"], version = "*"}
+
+[dev-packages]
+ipykernel = "*"
+
+[requires]
+python_version = "3.11"
