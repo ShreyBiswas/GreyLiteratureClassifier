@@ -1,8 +1,8 @@
 # Grey-Literature-Classifier
 
-### Building Datasets
+## Building Datasets
 
-#### Data Collection
+### Data Collection
 
 Download Scraped Evidence from provided Excel file, containing studies and relevant evidence/classification.
 
@@ -12,7 +12,7 @@ Download Irrelevant Data from Kacper's zip file.
 
 Run all of src/Preprocessing/scrapers/studies_scraper.ipynb (~40 minutes)
 
-#### Data Processing
+### Data Processing
 
 Run all of irrelevant_data_cleaner.ipynb
 
@@ -25,3 +25,12 @@ Run all of merge_labelled_data.ipynb
 This produces the final output in data.json, which can be read by pandas.DataFrame.read_json()
 
 ---
+
+## Training
+
+Activate the Docker environment and virtualenv with
+
+cd ..
+cd GreyLitDocker
+source venv/bin/activate
+cd Grey-Literature-Classifier
