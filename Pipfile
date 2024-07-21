@@ -18,7 +18,14 @@ wheel = "*"
 cupy-cuda12x = "*"
 requests = "*"
 pip = "*"
-spacy = {extras = ["cuda12x", "lookups", "transformers"], version = "*"}
+datasets = "*"
+evaluate = "*"
+accelerate = "*"
+transformers = {extras = ["torch"], version = "*"}
+optimum = "*"
+sentence-transformers = "*"
+einops = "*"
+xformers = "*"
 
 [dev-packages]
 ipykernel = "*"

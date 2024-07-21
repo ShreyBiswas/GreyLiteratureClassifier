@@ -17,12 +17,12 @@ class NaiveBayesClassifier:
             )
 
     def train(self, data: pd.DataFrame):
-        self.classes = data['class'].unique()
+        self.classes = data["class"].unique()
 
-        vectorized = self.vectorizer.fit_transform(data['text'])
+        vectorized = self.vectorizer.fit_transform(data["text"])
 
         self.classifier = MultinomialNB()
-        self.classifier.fit(vectorized, data['class'])
+        self.classifier.fit(vectorized, data["class"])
 
         self.trained = True
 
@@ -45,7 +45,7 @@ class NaiveBayesClassifier:
 
 if __name__ == "__main__":
 
-    from utils import import_labelled_data
+    from ..utils import import_labelled_data
 
     labelled_data = import_labelled_data().iloc[:1000]
 
