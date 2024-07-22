@@ -21,11 +21,13 @@ pip = "*"
 datasets = "*"
 evaluate = "*"
 accelerate = "*"
-transformers = {extras = ["torch"], version = "*"}
 optimum = "*"
 sentence-transformers = "*"
 einops = "*"
 xformers = "*"
+fast-fit = "*"
+setfit = {ref = "dont-use-deprecated-dataset-filter", git = "git+https://github.com/Wauplin/setfit"}
+transformers = "*"
 
 [dev-packages]
 ipykernel = "*"
