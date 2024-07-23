@@ -4,38 +4,28 @@ import pandas as pd
 from fastfit import FastFit
 from transformers import AutoTokenizer, pipeline
 from evaluate import load, combine
+from datasets import Dataset
 
 
 class FastFitClassifier:
 
     def __init__(
         self,
-        embedding_model=None,
         embedding_model_path=None,
         device="cuda",
     ):
 
 
         if embedding_model_path is None:
-            if embedding_model is not None:
-                embedding_model_path = f"src/FastFit/models/{embedding_model}"
-            else:
-                print(
-                    "No model provided. Defaulting to avsolatorio/GIST-small-Embedding-v0."
-                )
-                embedding_model_path = (
-                    "src/FastFit/models/avsolatorio/GIST-small-Embedding-v0"
-                )
-                embedding_model = "avsolatorio/GIST-small-Embedding-v0"
-        elif embedding_model_path is not None and embedding_model is None:
-            embedding_model = '/'.join(embedding_model_path.split("/")[-2:])
+            print('Defaulting to GIST-small-Embedding-v0')
+            embedding_model_path = "./avsolatorio/GIST-small-Embedding-v0"
 
         print("Loading model from", embedding_model_path, "...", end="\r")
         self.model = FastFit.from_pretrained(embedding_model_path)
         print("Model loaded.")
 
         print("Loading tokenizer...", end="\r")
-        self.tokenizer = AutoTokenizer.from_pretrained(embedding_model)
+        self.tokenizer = AutoTokenizer.from_pretrained(embedding_model_path)
         print("Tokenizer loaded.")
 
         print(f"Building classifier pipeline...", end="\r")
@@ -45,6 +35,7 @@ class FastFitClassifier:
             tokenizer=self.tokenizer,
             device=device,
             trust_remote_code=True,
+            max_length=2048,
         )
         print("Classifier pipeline built.")
 
@@ -53,7 +44,8 @@ class FastFitClassifier:
 
     def predict_chunks(self, chunked_text):
         print("Predicting from chunks...", end="\r")
-        predictions = self.classifier(chunked_text.tolist())
+        print('Predicting from chunks......')
+        predictions = self.classifier(chunked_text)
         print("Calculated predictions.")
         return predictions
 
@@ -82,7 +74,9 @@ class FastFitClassifier:
         )
         print("Data chunked.")
 
-        chunked_data["predictions"] = self.predict_chunks(chunked_data["text"])
+        chunked_dataset = Dataset.from_pandas(chunked_data)
+
+        chunked_data["predictions"] = self.predict_chunks(chunked_dataset["text"])
 
         if aggregate == "majority":
             data["predictions"] = chunked_data.groupby("chunk_id")["predictions"].apply(
