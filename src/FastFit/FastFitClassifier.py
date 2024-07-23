@@ -15,16 +15,20 @@ class FastFitClassifier:
         device="cuda",
     ):
 
-        if embedding_model is not None and embedding_model_path is None:
-            embedding_model_path = f"src/FastFit/models/{embedding_model}"
-        elif embedding_model is None and embedding_model_path is None:
-            print(
-                "No model provided. Defaulting to avsolatorio/GIST-small-Embedding-v0."
-            )
-            embedding_model_path = (
-                "src/FastFit/models/avsolatorio/GIST-small-Embedding-v0"
-            )
-            embedding_model = "avsolatorio/GIST-small-Embedding-v0"
+
+        if embedding_model_path is None:
+            if embedding_model is not None:
+                embedding_model_path = f"src/FastFit/models/{embedding_model}"
+            else:
+                print(
+                    "No model provided. Defaulting to avsolatorio/GIST-small-Embedding-v0."
+                )
+                embedding_model_path = (
+                    "src/FastFit/models/avsolatorio/GIST-small-Embedding-v0"
+                )
+                embedding_model = "avsolatorio/GIST-small-Embedding-v0"
+        elif embedding_model_path is not None and embedding_model is None:
+            embedding_model = '/'.join(embedding_model_path.split("/")[-2:])
 
         print("Loading model from", embedding_model_path, "...", end="\r")
         self.model = FastFit.from_pretrained(embedding_model_path)
