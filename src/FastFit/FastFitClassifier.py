@@ -1,31 +1,34 @@
-from tqdm import tqdm
+from tqdm.auto import tqdm
+
 import pandas as pd
 
 from fastfit import FastFit
 from transformers import AutoTokenizer, pipeline
 from evaluate import load, combine
 from datasets import Dataset
-
+from transformers.pipelines.pt_utils import KeyDataset
 
 class FastFitClassifier:
 
     def __init__(
         self,
-        embedding_model_path=None,
+        model_path=None,
         device="cuda",
+        text_overlap_proportion=0.2,
     ):
+        self.overlap_proportion = text_overlap_proportion
 
-
-        if embedding_model_path is None:
+        if model_path is None:
             print('Defaulting to GIST-small-Embedding-v0')
-            embedding_model_path = "./avsolatorio/GIST-small-Embedding-v0"
+            model_path = "./avsolatorio/GIST-small-Embedding-v0"
 
-        print("Loading model from", embedding_model_path, "...", end="\r")
-        self.model = FastFit.from_pretrained(embedding_model_path)
+        print("Loading model from", model_path, "...", end="\r")
+        self.model = FastFit.from_pretrained(model_path)
+        print()
         print("Model loaded.")
 
         print("Loading tokenizer...", end="\r")
-        self.tokenizer = AutoTokenizer.from_pretrained(embedding_model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         print("Tokenizer loaded.")
 
         print(f"Building classifier pipeline...", end="\r")
@@ -35,17 +38,34 @@ class FastFitClassifier:
             tokenizer=self.tokenizer,
             device=device,
             trust_remote_code=True,
-            max_length=2048,
+            max_length=self.tokenizer.model_max_length,
+
         )
+        print()
         print("Classifier pipeline built.")
 
     def get_model_name(self):
         return self.model.__class__.__name__
 
-    def predict_chunks(self, chunked_text):
+    def predict_chunks(self, chunked_text, chunk_id_counts,chunk_ids):
+        predictions = []
+
+        i = 0
+
         print("Predicting from chunks...", end="\r")
-        print('Predicting from chunks......')
-        predictions = self.classifier(chunked_text)
+
+        with tqdm(total=len(chunk_id_counts),desc='Files\t') as files_pbar:
+            with tqdm(total=len(chunked_text),desc='Chunks\t',miniters=50) as chunks_pbar:
+
+                for output in self.classifier(chunked_text,batch_size=100,num_workers=20,truncation=True):
+                    predictions.append(output)
+                    chunks_pbar.update(1)
+
+                    chunk_id_counts[chunk_ids.iloc[i]] -= 1
+                    if chunk_id_counts[chunk_ids.iloc[i]] == 0:
+                        files_pbar.update(1)
+                    i += 1
+
         print("Calculated predictions.")
         return predictions
 
@@ -60,23 +80,33 @@ class FastFitClassifier:
     def predict(
         self,
         data: pd.DataFrame,
-        max_len,
-        overlap_proportion,
         aggregate="majority",
-        embedder_model="avsolatorio/GIST-Embedding-v0",
     ):
+
+
 
         print("Chunking data...", end="\r")
         from chunking import chunk_dataset_and_explode
 
         chunked_data = chunk_dataset_and_explode(
-            data, max_len=max_len, overlap=int(max_len * overlap_proportion)
+            data, max_len=self.tokenizer.model_max_length, overlap=int(self.tokenizer.model_max_length * self.overlap_proportion)
         )
+
+        # get dict of chunk_ids to counts of that id so we can track when we've finished all chunks for a file
+        chunk_id_counts = chunked_data["chunk_id"].value_counts().to_dict()
+
         print("Data chunked.")
 
-        chunked_dataset = Dataset.from_pandas(chunked_data)
 
-        chunked_data["predictions"] = self.predict_chunks(chunked_dataset["text"])
+
+        chunked_dataset = Dataset.from_pandas(chunked_data)
+        chunked_data["predictions"] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'])
+
+
+
+        # get the 'label' key from each row in chunked_data['predictions'] using pandas
+        chunked_data["predictions"] = chunked_data["predictions"].apply(lambda x: x['label'])
+
 
         if aggregate == "majority":
             data["predictions"] = chunked_data.groupby("chunk_id")["predictions"].apply(
@@ -114,22 +144,17 @@ class FastFitClassifier:
         self,
         test_data,
         predictions,
-        metrics=["accuracy", "precision", "classification-report", "confusion-matrix"],
+        metrics=["accuracy", "precision", "classification-report", "confusion-matrix-mpl"],
     ):
-        evaluator = load("text-classification")
-
-        # results = evaluator.compute(
-        #     pipeline=self.classifier,
-        #     data=test_data,
-        #     metrics=combine(metrics),
-        # )
 
         if "classification-report" in metrics:
             from sklearn.metrics import classification_report
 
+            print('-----------------------------------------------------\n')
             print(
                 f"Classification Report: \n{classification_report(test_data, predictions)}"
             )
+            print('-----------------------------------------------------')
 
         if "accuracy" in metrics:
             from sklearn.metrics import accuracy_score
@@ -181,6 +206,14 @@ class FastFitClassifier:
 
             print(f"Confusion Matrix: \n{table}")
 
+        if "confusion-matrix-mpl" in metrics:
+            from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay
+            import matplotlib.pyplot as plt
+
+            matrix = confusion_matrix(test_data, predictions)
+            disp = ConfusionMatrixDisplay(confusion_matrix=matrix,display_labels=["Irrelevant","Relevant"])
+            disp.plot()
+            plt.show()
 
 if __name__ == "__main__":
     # test embedding
@@ -228,7 +261,6 @@ if __name__ == "__main__":
             "specificity",
             "confusion-matrix",
         ],
-        max_len=2048,
         overlap_proportion=0.2,
         aggregate="majority",
         embedder_model="avsolatorio/GIST-Embedding-v0",
