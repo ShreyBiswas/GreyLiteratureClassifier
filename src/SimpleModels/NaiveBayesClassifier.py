@@ -16,13 +16,13 @@ class NaiveBayesClassifier:
                 stop_words="english", ngram_range=ngram_range
             )
 
-    def train(self, data: pd.DataFrame):
-        self.classes = data["class"].unique()
+    def train(self, data: pd.DataFrame,label: str='relevance'):
+        self.classes = data[label].unique()
 
         vectorized = self.vectorizer.fit_transform(data["text"])
 
         self.classifier = MultinomialNB()
-        self.classifier.fit(vectorized, data["class"])
+        self.classifier.fit(vectorized, data[label])
 
         self.trained = True
 
@@ -45,7 +45,9 @@ class NaiveBayesClassifier:
 
 if __name__ == "__main__":
 
-    from ..utils import import_labelled_data
+    def import_labelled_data(path="data/labelled/data.json"):
+        data = pd.read_json(path, encoding="latin-1")
+        return data
 
     labelled_data = import_labelled_data().iloc[:1000]
 

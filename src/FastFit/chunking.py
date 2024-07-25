@@ -1,6 +1,7 @@
 from functools import reduce
 import pandas as pd
-
+from tqdm.auto import tqdm
+tqdm.pandas()
 
 def split(text, max_len, overlap):
 
@@ -19,7 +20,8 @@ def recombine(chunks, overlap):
 
 def chunk_dataset(data: pd.DataFrame, max_len, overlap):
     chunked_data = data.copy()
-    chunked_data["text"] = data.apply(
+
+    chunked_data["text"] = data.progress_apply(
         lambda x: split(x["text"], max_len, overlap), axis=1
     )
     return chunked_data

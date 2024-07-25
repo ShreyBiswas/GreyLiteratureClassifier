@@ -135,6 +135,8 @@ class FastFitClassifier:
 
         self.print_metrics(test_data["relevance"], predictions, metrics=metrics)
 
+        return predictions
+
     def print_metrics(
         self,
         test_data,
