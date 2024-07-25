@@ -58,7 +58,7 @@ class FastFitClassifier:
             with tqdm(total=len(chunked_text),desc='Chunks\t',miniters=50) as chunks_pbar:
 
                 for output in self.classifier(chunked_text,batch_size=100,num_workers=20,truncation=True):
-                    predictions.append(output)
+                    predictions.append(output['label'])
                     chunks_pbar.update(1)
 
                     chunk_id_counts[chunk_ids.iloc[i]] -= 1
@@ -101,11 +101,6 @@ class FastFitClassifier:
 
         chunked_dataset = Dataset.from_pandas(chunked_data)
         chunked_data["predictions"] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'])
-
-
-
-        # get the 'label' key from each row in chunked_data['predictions'] using pandas
-        chunked_data["predictions"] = chunked_data["predictions"].apply(lambda x: x['label'])
 
 
         if aggregate == "majority":
