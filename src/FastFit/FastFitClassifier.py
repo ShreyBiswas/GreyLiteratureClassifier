@@ -49,6 +49,7 @@ class FastFitClassifier:
 
     def predict_chunks(self, chunked_text, chunk_id_counts,chunk_ids):
         predictions = []
+        scores = []
 
         i = 0
 
@@ -59,6 +60,7 @@ class FastFitClassifier:
 
                 for output in self.classifier(chunked_text,batch_size=100,num_workers=20,truncation=True):
                     predictions.append(output['label'])
+                    scores.append(output['score'])
                     chunks_pbar.update(1)
 
                     chunk_id_counts[chunk_ids.iloc[i]] -= 1
@@ -67,7 +69,7 @@ class FastFitClassifier:
                     i += 1
 
         print("Calculated predictions.")
-        return predictions
+        return predictions, scores
 
     def evaluate_chunks(
         self, test_data, metrics=["accuracy", "precision", "classification-report"]
@@ -100,25 +102,40 @@ class FastFitClassifier:
 
 
         chunked_dataset = Dataset.from_pandas(chunked_data)
-        chunked_data["predictions"] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'])
+        chunked_data["predictions"], chunked_data['score'] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'])
 
 
         if aggregate == "majority":
-            data["predictions"] = chunked_data.groupby("chunk_id")["predictions"].apply(
-                lambda x: x.mode().iloc[0]
+            grouped = chunked_data.groupby("chunk_id").agg({
+                'predictions': lambda x: x.mode().iloc[0],
+                'score': 'mean'
+                }
             )
+            data['predictions'] = grouped['predictions']
+            data['score'] = grouped['score']
+
         elif aggregate == "all":
-            data["predictions"] = chunked_data.groupby("chunk_id")["predictions"].apply(
-                lambda x: (
+            grouped = chunked_data.groupby("chunk_id").agg({
+                'predictions': lambda x: (
                     "relevant" if (x.unique() == "relevant").all() else "irrelevant"
-                )
+                ),
+                'score': 'mean'
+                }
             )
+            data['predictions'] = grouped['predictions']
+            data['score'] = grouped['score']
+
         elif aggregate == "any":
-            data["predictions"] = chunked_data.groupby("chunk_id")["predictions"].apply(
-                lambda x: (
+            grouped = chunked_data.groupby("chunk_id").agg({
+                'predictions': lambda x: (
                     "relevant" if (x.unique() == "relevant").any() else "irrelevant"
-                )
+                ),
+                'score': 'mean'
+                }
             )
+            data['predictions'] = grouped['predictions']
+            data['score'] = grouped['score']
+
 
         return data
 
@@ -129,18 +146,18 @@ class FastFitClassifier:
         **kwargs,
     ):
 
-        predictions = self.predict(test_data, **kwargs)["predictions"]
+        predictions_data = self.predict(test_data, **kwargs)
 
         print("Evaluating model...\n")
 
-        self.print_metrics(test_data["relevance"], predictions, metrics=metrics)
+        self.print_metrics(test_data["relevance"], predictions_data["predictions"], metrics=metrics)
 
-        return predictions
+        return predictions_data
 
     def print_metrics(
         self,
-        test_data,
-        predictions,
+        test_data: pd.Series,
+        predictions: pd.Series,
         metrics=["accuracy", "precision", "classification-report", "confusion-matrix-mpl"],
     ):
 
