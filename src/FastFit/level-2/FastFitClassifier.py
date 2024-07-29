@@ -20,7 +20,7 @@ class FastFitClassifier:
 
         if model_path is None:
             print('Defaulting to GIST-small-Embedding-v0')
-            model_path = "./avsolatorio/GIST-small-Embedding-v0"
+            model_path = "./models/relevance/avsolatorio/GIST-small-Embedding-v0"
 
         print("Loading model from", model_path, "...", end="\r")
         self.model = FastFit.from_pretrained(model_path)
@@ -112,7 +112,7 @@ class FastFitClassifier:
                 }
             )
             data['predictions'] = grouped['predictions']
-            data['score'] = grouped['score']
+            data['score-lv2'] = grouped['score']
 
         elif aggregate == "all":
             grouped = chunked_data.groupby("chunk_id").agg({
@@ -259,11 +259,13 @@ if __name__ == "__main__":
     # test chunking
 
     print("Loading data...")
-    test_dataset = pd.read_json("data/labelled/data.json")
+    test_dataset = pd.read_json("../../../data/level-1/data.json")
     print("Data loaded.")
     test_dataset = test_dataset.sample(5000)
     classifier = FastFitClassifier(
         embedding_model="avsolatorio/GIST-small-Embedding-v0",
+        text_overlap_proportion=0.2,
+        device='cuda'
     )
 
     classifier.evaluate(
@@ -275,7 +277,5 @@ if __name__ == "__main__":
             "specificity",
             "confusion-matrix",
         ],
-        overlap_proportion=0.2,
         aggregate="majority",
-        embedder_model="avsolatorio/GIST-Embedding-v0",
     )
