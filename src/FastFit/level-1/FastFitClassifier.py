@@ -39,6 +39,7 @@ class FastFitClassifier:
             device=device,
             trust_remote_code=True,
             max_length=self.tokenizer.model_max_length,
+            torch_dtype="float16",
 
         )
         print()
@@ -58,7 +59,7 @@ class FastFitClassifier:
         with tqdm(total=len(chunk_id_counts),desc='Files\t') as files_pbar:
             with tqdm(total=len(chunked_text),desc='Chunks\t',miniters=50) as chunks_pbar:
 
-                for output in self.classifier(chunked_text,batch_size=64,num_workers=16,truncation=True):
+                for output in self.classifier(chunked_text,batch_size=128,num_workers=16,truncation=True):
                     predictions.append(output['label'])
                     scores.append(output['score'])
                     chunks_pbar.update(1)
