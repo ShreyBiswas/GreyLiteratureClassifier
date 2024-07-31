@@ -15,6 +15,7 @@ class FastFitClassifier:
         model_path=None,
         device="cuda",
         text_overlap_proportion=0.2,
+        max_length=512,
     ):
         self.overlap_proportion = text_overlap_proportion
 
@@ -29,7 +30,7 @@ class FastFitClassifier:
 
         print("Loading tokenizer...", end="\r")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        print("Tokenizer loaded.")
+        print(f"Tokenizer loaded with max_length: {self.tokenizer.model_max_length}")
 
         print(f"Building classifier pipeline...", end="\r")
         self.classifier = pipeline(
@@ -38,7 +39,8 @@ class FastFitClassifier:
             tokenizer=self.tokenizer,
             device=device,
             trust_remote_code=True,
-            max_length=self.tokenizer.model_max_length,
+            max_length=min(self.tokenizer.model_max_length,max_length),
+            torch_dtype="float16",
 
         )
         print()
