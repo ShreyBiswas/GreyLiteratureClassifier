@@ -44,6 +44,7 @@ def recombine_dataset(data: pd.DataFrame, overlap):
         .agg(
             {
                 "text": lambda x: recombine(x, overlap),
+                "prediction": lambda x: x.mode().iloc[0],
                 **{
                     col: "mode"
                     for col in data.columns
@@ -63,12 +64,12 @@ if __name__ == "__main__":
         [{"text": "hello world", "class": 0}, {"text": "one two three", "class": 1}]
     )
 
-    max_len = 20
+    max_len = 5
     overlap = 2
 
     print(data)
     newData = chunk_dataset(data, max_len, overlap)
     print(newData)
 
-    # newData = recombine_dataset(newData, overlap)
-    # print(newData)
+    newData = recombine_dataset(newData, overlap)
+    print(newData)

@@ -15,6 +15,7 @@ class FastFitClassifier:
         model_path=None,
         device="cuda",
         text_overlap_proportion=0.2,
+        max_length=512,
     ):
         self.overlap_proportion = text_overlap_proportion
 
@@ -29,7 +30,7 @@ class FastFitClassifier:
 
         print("Loading tokenizer...", end="\r")
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        print("Tokenizer loaded.")
+        print(f"Tokenizer loaded with max_length: {self.tokenizer.model_max_length}")
 
         print(f"Building classifier pipeline...", end="\r")
         self.classifier = pipeline(
@@ -38,7 +39,7 @@ class FastFitClassifier:
             tokenizer=self.tokenizer,
             device=device,
             trust_remote_code=True,
-            max_length=self.tokenizer.model_max_length,
+            max_length=min(self.tokenizer.model_max_length,max_length),
             torch_dtype="float16",
 
         )
@@ -48,7 +49,7 @@ class FastFitClassifier:
     def get_model_name(self):
         return self.model.__class__.__name__
 
-    def predict_chunks(self, chunked_text, chunk_id_counts,chunk_ids):
+    def predict_chunks(self, chunked_text, chunk_id_counts,chunk_ids, batch_size=64):
         predictions = []
         scores = []
 
@@ -59,7 +60,7 @@ class FastFitClassifier:
         with tqdm(total=len(chunk_id_counts),desc='Files\t') as files_pbar:
             with tqdm(total=len(chunked_text),desc='Chunks\t',miniters=50) as chunks_pbar:
 
-                for output in self.classifier(chunked_text,batch_size=128,num_workers=16,truncation=True):
+                for output in self.classifier(chunked_text,batch_size=batch_size,num_workers=16,truncation=True):
                     predictions.append(output['label'])
                     scores.append(output['score'])
                     chunks_pbar.update(1)
@@ -84,6 +85,7 @@ class FastFitClassifier:
         self,
         data: pd.DataFrame,
         aggregate="majority",
+        batch_size=64,
     ):
 
 
@@ -101,9 +103,9 @@ class FastFitClassifier:
         print("Data chunked.")
 
 
-
+        print('Converting to Dataset format...')
         chunked_dataset = Dataset.from_pandas(chunked_data)
-        chunked_data["predictions"], chunked_data['score'] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'])
+        chunked_data["predictions"], chunked_data['score'] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'],batch_size=batch_size)
 
 
         if aggregate == "majority":
