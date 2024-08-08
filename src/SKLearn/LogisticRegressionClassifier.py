@@ -54,8 +54,15 @@ class LogisticRegressionClassifier:
 
         probabilities = self.predict_proba(xFeatures)
 
-        return probabilities[:, 1] > threshold
+        return probabilities[:, 1] > threshold, probabilities
 
+    def boolPredictionsToLabels(self, predictions):
+        textPreds = predictions.astype('str')
+
+        textPreds[textPreds == 'False'] = 'irrelevant'
+        textPreds[textPreds == 'True'] = 'relevant'
+
+        return textPreds
 
 
 if __name__ == "__main__":

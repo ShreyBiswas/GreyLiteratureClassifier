@@ -27,9 +27,6 @@ class LogisticRegressionClassifier:
 
     def train(self, data: pd.DataFrame, label='relevance'):
 
-
-        self.classes = data[label].unique()
-
         print('Vectorizing...',end='\r')
 
         vectorized = self.vectorizer.fit_transform(data['text'])
@@ -66,6 +63,16 @@ class LogisticRegressionClassifier:
         probabilities = self.predict_proba(xFeatures)
 
         return (probabilities[:, 1] > threshold), probabilities
+
+    def boolPredictionsToLabels(self, predictions):
+        textPreds = predictions.astype('str')
+
+        textPreds[textPreds == 'False'] = 'irrelevant'
+        textPreds[textPreds == 'True'] = 'relevant'
+
+        return textPreds
+
+
 
 
 
