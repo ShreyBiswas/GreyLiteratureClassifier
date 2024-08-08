@@ -35,7 +35,6 @@ setfit = {ref = "dont-use-deprecated-dataset-filter", git = "git+https://github.
 transformers = "*"
 nvitop = "*"
 pystemmer = "*"
-cuml-cu12 = {version = "*", index = "nvidia"}
 
 [dev-packages]
 ipykernel = "*"
