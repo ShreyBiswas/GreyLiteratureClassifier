@@ -1,6 +1,8 @@
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer, HashingVectorizer
-from sklearn.linear_model import LogisticRegression
-import pandas as pd
+from cuml.feature_extraction.text import CountVectorizer, TfidfVectorizer, HashingVectorizer
+from cuml.linear_model import LogisticRegression
+import cudf as pd
+
+# import pandas as pd
 
 
 class LogisticRegressionClassifier:
@@ -25,13 +27,22 @@ class LogisticRegressionClassifier:
 
     def train(self, data: pd.DataFrame, label='relevance'):
 
+
         self.classes = data[label].unique()
+
+        print('Vectorizing...',end='\r')
 
         vectorized = self.vectorizer.fit_transform(data['text'])
 
-        self.classifier.fit(vectorized, data[label])
+        print('Vectorizing complete.')
+
+        print('Training...',end='\r')
+
+        self.classifier.fit(vectorized, (data[label]=='relevant').astype(int))
 
         self.trained = True
+
+        print('Training complete.')
 
     def predict(self, xFeatures: pd.DataFrame):
         if not self.trained:
@@ -54,19 +65,20 @@ class LogisticRegressionClassifier:
 
         probabilities = self.predict_proba(xFeatures)
 
-        return probabilities[:, 1] > threshold
+        return (probabilities[:, 1] > threshold), probabilities
 
 
 
 if __name__ == "__main__":
 
-    def import_labelled_data(path="data/labelled/data.json"):
+    def import_labelled_data(path="../../data/level-0.5/data.json"):
         data = pd.read_json(path, encoding="latin-1")
         return data
 
-    labelled_data = import_labelled_data().iloc[:1000]
+    labelled_data = import_labelled_data("../../data/level-0.5/data.json").iloc[:1000]
 
-    classifier = LogisticRegressionClassifier(vectorizer="CountVectorizer")
+    classifier = LogisticRegressionClassifier(vectorizer="HashingVectorizer")
+    print(labelled_data.head())
     classifier.train(labelled_data)
 
     text = pd.DataFrame.from_dict(

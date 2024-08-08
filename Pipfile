@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://pypi.nvidia.com"
+verify_ssl = true
+name = "nvidia"
+
 [packages]
 nltk = "*"
 pandas = "*"
@@ -29,6 +34,8 @@ fast-fit = "*"
 setfit = {ref = "dont-use-deprecated-dataset-filter", git = "git+https://github.com/Wauplin/setfit"}
 transformers = "*"
 nvitop = "*"
+pystemmer = "*"
+cuml-cu12 = {version = "*", index = "nvidia"}
 
 [dev-packages]
 ipykernel = "*"
