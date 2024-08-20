@@ -2,7 +2,7 @@
 
 #### Notes
 - `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go.
-- Note: It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
+- It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
 
 ### Model Levels
 
@@ -149,3 +149,8 @@ python predict.py \
 
 The final results can be viewed in `results/level-2.5/urls.csv`. This will be a list of URLs sorted by their predicted relevance score.  \
 For further processing, all data output is stored in `data/level-x.5/potential.json`; so, to add levels after 2.5, read `data/level-2.5/potential.json`.
+
+
+TODO: Track the modifications made to FastFit - they're all in the notebooks right now.
+TODO: Clean up the file structures.
+TODO: Add trust_remote_code to FastFit to enable the use of better models.
