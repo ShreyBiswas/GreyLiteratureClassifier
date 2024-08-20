@@ -8,8 +8,8 @@
 
 The entire workflow is split into levels.
 
-- The **Unprocessed** layer contains raw data.
-- **Preprocessing** transforms *Unprocessed* data to *Level-0.5* data.
+- **Unprocessed** data is raw data, downloaded or scraped.
+- **Preprocessing** cleans *Unprocessed* data to produce *Level-0.5* data in Pandas' JSON format.
 - **Level-0.5** contains our entire dataset, cleaned and ready for use.
 - **Level-1** models are extremely performant, less accurate models that take *Level-0.5* data and extracts *Level-1.5* data.
 - **Level-1.5** data has been selected as a potential Conservation-adjacent item.
@@ -41,7 +41,7 @@ The best candidates from each layer will be saved into `results/level-x.5`.
 *Unprocessed --- `preprocess.py` ---> Level-0.5*
 
 Move the current working directory to `src/scripts`.  \
-Use `preprocess.py` for this.
+We use `preprocess.py` for preprocessing.
 
 On first use, it is recommended to call `--scrape-studies` (~25min) and `--scrape-spreadsheet` (~2min):
 ```bash
@@ -78,6 +78,9 @@ python preprocess.py \
 *Level-0.5 ---> Level-1 models*  \
 *Level-0.5 ---> Level-2 models*
 
+Move the current working directory to `src/scripts`.  \
+We use `train.py` for training.
+
 There are two models implemented:
  - Logistic Regression, using CuML and NVIDIA Rapids.
  - Embeddings, using FastFit.
@@ -86,7 +89,7 @@ The recommended flow is to use CuML for Level 1, and Embeddings for Level 2. Bot
 
 
 ```bash
-!python train.py \
+python train.py \
     --model CuML \
     --data-path=../../data/level-0.5/data.json \
     --output-path=./models/level-1/cuML_classifier.pkl \
@@ -95,7 +98,7 @@ The recommended flow is to use CuML for Level 1, and Embeddings for Level 2. Bot
 
 
 ```bash
-!python train.py \
+python train.py \
     --model FastFit \
     --data-path=../../data/level-0.5/data.json \
     --embedding-model=avsolatorio/GIST-Embedding-v0 \
@@ -114,11 +117,14 @@ Parameters can be tweaked as necessary to speed up execution or fit the GPU bein
 *Level-0.5 --- Level-1 ---> Level-1.5*  \
 *Level-1.5 --- Level-2 ---> Level-2.5, results*
 
+Move the current working directory to `src/scripts`.  \
+We use `predict.py` for inference.
+
 We can load the two models from before and use them on our data.
 
 Starting with CuML at Level 1, we classify the whole irrelevant corpus to try and find lucky conservation-adjacent articles.
 ```bash
-!python predict.py \
+python predict.py \
     --model=CuML \
     --model-path=./models/level-1/cuML_classifier.pkl \
     --data-path=../../data/level-0.5/irrelevant.json \
@@ -130,7 +136,7 @@ Starting with CuML at Level 1, we classify the whole irrelevant corpus to try an
 
 Then, with FastFit at Level 2, we use a more advanced approach to rank articles and extract the 200 best candidates.
 ```bash
-!python predict.py \
+python predict.py \
     --model=FastFit \
     --model-path=./models/level-2/avsolatorio/GIST-Embedding-v0 \
     --data-path=../../data/level-1.5/potential.json \
