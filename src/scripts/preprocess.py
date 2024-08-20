@@ -595,6 +595,8 @@ def main(scrape_studies: bool = False,
          studies_path: str = None,
          **kwargs):
 
+    print('\n\n')
+
 
     if raw_spreadsheet_path is not None and not scrape_spreadsheet:
         raise ValueError('Please provide the --scrape_spreadsheet flag to scrape the spreadsheet data, or remove the raw_spreadsheet_path argument.')

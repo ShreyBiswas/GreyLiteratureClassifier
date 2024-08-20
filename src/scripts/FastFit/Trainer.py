@@ -24,7 +24,7 @@ class FastFitTrainer:
         print('\nTest data:')
         print(self.test)
 
-    def set_trainer(self, model_name='avsolatorio/GIST-Embedding-v0', output_dir='./models/level-1.5/', max_len=512, batch_size=64):
+    def set_trainer(self, model_name='avsolatorio/GIST-Embedding-v0', output_dir='./models/level-2/', max_len=512, batch_size=64):
         from fastfit import FastFitTrainer as FFTrainer
         self.model_name = model_name
         self.trainer = FFTrainer(
@@ -95,7 +95,7 @@ class FastFitTrainer:
 
 
 
-    def save_classifier(self, output_path: str='./models/level-1.5/'):
+    def save_classifier(self, output_path: str='./models/level-2/'):
         output_path = output_path + self.model_name
         print('\nSaving classifier...')
 

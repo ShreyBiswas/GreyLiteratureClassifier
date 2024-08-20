@@ -55,8 +55,6 @@ class FastFitClassifier:
 
         i = 0
 
-        print("Predicting from chunks...", end="\r")
-
         with tqdm(total=len(chunk_id_counts),desc='Files', position=0, leave=True) as files_pbar:
             with tqdm(total=len(chunked_text),desc='Chunks',miniters=100, position=1, leave=True) as chunks_pbar:
 
@@ -71,7 +69,6 @@ class FastFitClassifier:
 
                     i += 1
 
-        print("Calculated predictions.")
         return predictions, scores
 
     def evaluate_chunks(
@@ -87,6 +84,7 @@ class FastFitClassifier:
         data: pd.DataFrame,
         aggregate="majority",
         batch_size=64,
+        level=2,
     ):
 
 
@@ -106,7 +104,12 @@ class FastFitClassifier:
 
         print('Converting to Dataset format...')
         chunked_dataset = Dataset.from_pandas(chunked_data)
+        print('Converted.\n')
+
+        print("Predicting from chunks...")
         chunked_data["predictions"], chunked_data['score'] = self.predict_chunks(KeyDataset(chunked_dataset,'text'),chunk_id_counts, chunked_data['chunk_id'],batch_size=batch_size)
+        print("Calculated predictions.")
+
 
 
         if aggregate == "majority":
@@ -116,7 +119,7 @@ class FastFitClassifier:
                 }
             )
             data['predictions'] = grouped['predictions']
-            data['score-lv2'] = grouped['score']
+            data[f'score-lv{level}'] = grouped['score']
 
         elif aggregate == "all":
             grouped = chunked_data.groupby("chunk_id").agg({
@@ -127,7 +130,7 @@ class FastFitClassifier:
                 }
             )
             data['predictions'] = grouped['predictions']
-            data['score'] = grouped['score']
+            data[f'score-lv{level}'] = grouped['score']
 
         elif aggregate == "any":
             grouped = chunked_data.groupby("chunk_id").agg({
@@ -138,7 +141,7 @@ class FastFitClassifier:
                 }
             )
             data['predictions'] = grouped['predictions']
-            data['score'] = grouped['score']
+            data[f'score-lv{level}'] = grouped['score']
 
 
         return data
@@ -183,7 +186,7 @@ class FastFitClassifier:
             from sklearn.metrics import f1_score
 
             print(
-                f"F1 Score: {round(f1_score(test_data, predictions, average='macro'), 5)}"
+                f"F1 Score: {round(f1_score(test_data, predictions, average='macro', zero_division=0), 5)}"
             )
 
         if "precision" in metrics:
@@ -191,14 +194,14 @@ class FastFitClassifier:
             from sklearn.metrics import precision_score
 
             print(
-                f"Precision: {round(precision_score(test_data, predictions, average='macro'), 5)}"
+                f"Precision: {round(precision_score(test_data, predictions, average='macro', zero_division=0), 5)}"
             )
 
         if "recall" in metrics:
             from sklearn.metrics import recall_score
 
             print(
-                f"Recall: {round(recall_score(test_data, predictions, average='macro'), 5)}"
+                f"Recall: {round(recall_score(test_data, predictions, average='macro', zero_division=0), 5)}"
             )
 
         if "specificity" in metrics:

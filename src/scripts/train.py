@@ -105,7 +105,7 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
 
 
     print('\nInitialising FastFit trainer...')
-    trainer.set_trainer(model_name=model_name, max_len=chunk_size, batch_size=kwargs.get('batch_size', 32))
+    trainer.set_trainer(model_name=model_name, max_len=chunk_size, batch_size=kwargs.get('batch_size', 32), output_dir=output_path)
 
     print('Initialisation complete.\n')
 
@@ -118,18 +118,16 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
 
 
 
+def main(**kwargs):
+    model = kwargs.get('model', 'CuML')
 
+    print('\n\n')
 
-
-
-
-def main(model='CuML', data_path='../../data/level-0.5/data.json', output_path='./models/level-1', test_frac=0.2, seed=42, timer=False, **kwargs):
-
-    if model.upper() == 'CUML': # case insensitive
-        train_cuML(data_path, output_path, test_frac, seed, timer, **kwargs)
+    if model.upper() == 'CUML' or model.upper() == 'RAPIDS': # case insensitive
+        train_cuML(**kwargs)
 
     elif model.upper() == 'EMBEDDINGS' or model.upper() == 'FASTFIT':
-        train_embeddings(data_path, output_path, test_frac, seed, timer, **kwargs)
+        train_embeddings(**kwargs)
 
 
 

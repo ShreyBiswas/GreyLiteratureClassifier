@@ -7,7 +7,7 @@ from pickle import load
 
 tqdm.pandas()
 
-def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, seed=42, save_top=100, timer=False ):
+def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, level=1, seed=42, save_top=100, timer=False ):
     from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
 
     print(f'\nLoading model from {model_path}...')
@@ -45,7 +45,7 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
     print('Evaluating classifier...\n')
 
-    data['score-lv1'] = probabilities[:, 1]
+    data[f'score-lv{level}'] = probabilities[:, 1]
     data['prediction'] = classifier.boolPredictionsToLabels(predictions)
     print(data['prediction'].value_counts())
 
@@ -53,13 +53,13 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
 
 
-    false_positives = data[(data['relevance'] == 'irrelevant') & (data['prediction'] == 'relevant')].sort_values('score-lv1', ascending=False)
-    data = data.sort_values('score-lv1', ascending=False)
+    false_positives = data[(data['relevance'] == 'irrelevant') & (data['prediction'] == 'relevant')].sort_values(f'score-lv{level}', ascending=False)
+    data = data.sort_values(f'score-lv{level}', ascending=False)
 
     print('\n\nPotential new Conservation Evidence:')
     false_positives.info()
 
-    print('\n\n',false_positives[['score-lv1', 'url']].head(20))
+    print('\n\n',false_positives[[f'score-lv{level}', 'url']].head(20))
 
     if output_path is not None:
         print('Saving potential results...')
@@ -71,7 +71,7 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
         if not os.path.exists(os.path.dirname(json_path)):
             os.makedirs(os.path.dirname(json_path))
 
-        data[['score-lv1', 'url']].head(save_top).to_csv(csv_path, index=False)
+        data[[f'score-lv{level}', 'url']].head(save_top).to_csv(csv_path, index=False)
         print(f'Saved to {csv_path}.\n')
         data.head(save_top).to_json(json_path, orient='records', indent=4)
         print(f'Saved to {json_path}\n')
@@ -84,7 +84,7 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
 
 
-def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/GIST-embedding-v0', data_path='./data/level-0.5/data.json', output_path=None, seed=42, save_top=100, timer=False, **kwargs):
+def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/GIST-embedding-v0', data_path='./data/level-0.5/data.json', output_path=None, level=2, seed=42, save_top=100, timer=False, **kwargs):
 
     from FastFit.FastFitClassifier import FastFitClassifier
 
@@ -119,19 +119,19 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
         import time
         start = time.time()
 
-    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=48)
+    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=48, level=level)
 
     if timer:
         end = time.time()
         print(f'\n\nTesting time on {len(data)} articles: ', end-start, ' seconds')
         print(f'\nFiles processed per second: {len(data) / (end-start)}')
 
-    potential = data[data['prediction'] == 'relevant'].sort_values('score-lv2', ascending=False)
+    potential = data[data['prediction'] == 'relevant'].sort_values(f'score-lv{level}', ascending=False)
 
     print('\n\nPotential new Conservation Evidence:')
     potential.info()
 
-    print('\n\n',potential[['score-lv2', 'url']].head(20))
+    print('\n\n',potential[[f'score-lv{level}', 'url']].head(20))
 
     if output_path is not None:
         print('Saving potential results...')
@@ -144,9 +144,9 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
         if not os.path.exists(os.path.dirname(json_path)):
             os.makedirs(os.path.dirname(json_path))
 
-        data[['score-lv1', 'url']].head(save_top).to_csv(csv_path, index=False)
+        potential[[f'score-lv{level}', 'url']].head(save_top).to_csv(csv_path, index=False)
         print(f'Saved to {csv_path}.\n')
-        data.head(save_top).to_json(json_path, orient='records', indent=4)
+        potential.head(save_top).to_json(json_path, orient='records', indent=4)
         print(f'Saved to {json_path}.\n')
 
     print('\n\nTesting complete.\n')
@@ -156,13 +156,16 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
 
 
 
-def main(model='CuML', model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, seed=42, timer=False, save_top=100, **kwargs):
+def main(**kwargs):
+    print('\n\n')
 
-    if model.upper() == 'CUML':
-        test_cuML(model_path, data_path, output_path, seed, save_top, timer)
+    model = kwargs.get('model', 'CuML')
+
+    if model.upper() == 'CUML' or model.upper() == 'RAPIDS':
+        test_cuML(**kwargs)
 
     elif model.upper() == 'EMBEDDINGS' or model.upper() == 'FASTFIT':
-        test_embeddings(model_path, data_path, output_path, seed, save_top, timer, **kwargs)
+        test_embeddings(**kwargs)
         pass
 
 
@@ -174,9 +177,10 @@ parser.add_argument('--model', type=str, default='CuML', help='Type of model to 
 parser.add_argument('--model-path', type=str, default='./models/level-0.5/LogisticRegression.pkl', help='Path to model')
 parser.add_argument('--data-path', type=str, default='../../data/level-0.5/data.json', help='Path to data')
 parser.add_argument('--output-path', type=str, default=None, help='Path to save potential results')
+parser.add_argument('--level', type=int, default=1, help='Level at which to apply classifier (1 or 2)')
 parser.add_argument('--seed', type=int, help='Random seed')
 parser.add_argument('--timer', action='store_true', help='Time the training process')
-parser.add_argument('--save-top', type=int, default=100, help='Number of top results to save')
+parser.add_argument('--save-top', type=int, default=200, help='Number of top results to save')
 
 
 
