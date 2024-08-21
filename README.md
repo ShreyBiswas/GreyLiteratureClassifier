@@ -167,7 +167,8 @@ python predict.py \
     --level 2 \
     --timer
 ```
-*Note: If you get ValueError: Unrecognized model identifier, try another model.*
+*Note: If you get a ValueError: Unrecognized model identifier, try another model.*  \
+*If you get the warning 'The model 'FastFit' is not supported for text-classification', ignore it - it'll still classify perfectly.*
 
 The final results can be viewed in `results/level-2.5/urls.csv`. This will be a list of URLs sorted by their predicted relevance score.  \
 For further processing, all data output is stored in `data/level-x.5/potential.json`; so, to add levels after 2.5, read `data/level-2.5/potential.json`.

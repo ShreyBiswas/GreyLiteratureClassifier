@@ -11,6 +11,10 @@ tqdm.pandas()
 pymupdf.TOOLS.mupdf_display_warnings(False)
 pymupdf.TOOLS.mupdf_display_errors(False)
 
+
+def bold(string):
+    return f'\033[1m{string}\033[0m'
+
 def scrape_studies_func():
     print('Scraping studies...')
 
@@ -632,6 +636,19 @@ def main(scrape_studies: bool = False,
         raise FileNotFoundError(f'{synopses_path} does not exist. Please provide a valid path to the synopses data.')
     elif studies_path is not None and studies_path != 'None' and not os.path.exists(studies_path):
         raise FileNotFoundError(f'{studies_path} does not exist. Please provide a valid path to the studies data.')
+
+
+
+
+    if kwargs.get('remove_files', False):
+        from time import sleep
+        print(f'\n{bold("************ WARNING ************")}\n\n')
+        print(f'You are about to clean irrelevant data. This process will remove all irrelevant data from the provided path, and combine them into a single file in level-0.5. ')
+        print(f'If the original batch files are not backed up, {bold("they will be lost")}. Only proceed if this is intended.')
+        print(f'\nAre you sure you want to proceed? The process will begin in 5 seconds; {bold("terminate it now if needed")}.')
+        print(f'\n\n {bold("********************************")}\n\n')
+        sleep(5)
+
 
 
     #* SCRAPING

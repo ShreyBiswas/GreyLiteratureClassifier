@@ -7,6 +7,12 @@ from pickle import load
 
 tqdm.pandas()
 
+
+
+def bold(string):
+    return f'\033[1m{string}\033[0m'
+
+
 def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, level=1, seed=42, save_top=100, timer=False, **kwargs ):
     from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
 
@@ -28,13 +34,13 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
     print('Classifying', len(data), 'files.')
     s = len(data) / 160
     m, s = divmod(s, 60)
-    print('Estimated time: ', m, ' minutes ', int(s), ' seconds')
+    print(bold('\nEstimated time: '), m, ' minutes ', int(s), ' seconds\n')
 
     if timer:
         import time
         start = time.time()
 
-    predictions, probabilities = classifier.predict_threshold(data, threshold=0.5)
+    predictions, probabilities = classifier.predict_threshold(data, threshold=0.4)
 
 
     if timer:
@@ -56,13 +62,14 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
     false_positives = data[(data['relevance'] == 'irrelevant') & (data['prediction'] == 'relevant')].sort_values(f'score-lv{level}', ascending=False)
     data = data.sort_values(f'score-lv{level}', ascending=False)
 
-    print('\n\nPotential new Conservation Evidence:')
+    print(bold('\n\nPotential new Conservation Evidence:'))
     false_positives.info()
 
     print('\n\n',false_positives[[f'score-lv{level}', 'url']].head(20))
 
     if output_path is not None:
-        print('Saving potential results...')
+        print(f'Saving {save_top} potential results...')
+
         csv_path = os.path.join(output_path, 'urls.csv')
         json_path = os.path.join(os.path.dirname(data_path).replace('0.5', '1.5'), 'potential.json')
 
@@ -78,13 +85,15 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
 
 
-    print('\n\nPrediction complete.\n')
+    print(bold('\n\nPrediction complete.\n'))
 
 
 
 
 
-def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/GIST-embedding-v0', data_path='./data/level-0.5/data.json', output_path=None, level=2, seed=42, save_top=100, timer=False, **kwargs):
+def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/GIST-embedding-v0', data_path='./data/level-0.5/data.json', output_path=None, level=2, seed=42, save_top=100, timer=False, batch_size=48, **kwargs):
+
+    print('\nInitialising classifier...')
 
     from FastFit.FastFitClassifier import FastFitClassifier
 
@@ -95,7 +104,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
         max_length=kwargs.get('max_length', 512)
     )
 
-    print('Model loaded.\n')
+    print('Classifier initialised.\n')
 
 
     print('Loading data...\n')
@@ -113,13 +122,13 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
     s = len(data) / 1.6
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
-    print('Estimated time: ', h, ' hours ', m, ' minutes ', int(s), ' seconds')
+    print(bold('\nEstimated time: '), h, ' hours ', m, ' minutes ', int(s), ' seconds\n')
 
     if timer:
         import time
         start = time.time()
 
-    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=48, level=level)
+    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=batch_size, level=level, penalise_short_texts=False)
 
     if timer:
         end = time.time()
@@ -128,13 +137,13 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
 
     potential = data[data['prediction'] == 'relevant'].sort_values(f'score-lv{level}', ascending=False)
 
-    print('\n\nPotential new Conservation Evidence:')
+    print(bold('\n\nPotential new Conservation Evidence:'))
     potential.info()
 
     print('\n\n',potential[[f'score-lv{level}', 'url']].head(20))
 
     if output_path is not None:
-        print('Saving potential results...')
+        print(f'Saving {len(potential)} potential results...')
 
         csv_path = os.path.join(output_path, 'urls.csv')
         json_path = os.path.join(os.path.dirname(data_path).replace('1.5', '2.5'), 'potential.json')
@@ -149,7 +158,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
         potential.head(save_top).to_json(json_path, orient='records', indent=4)
         print(f'Saved to {json_path}.\n')
 
-    print('\n\nTesting complete.\n')
+    print(bold('\n\nPrediction complete.\n'))
 
 
 
@@ -181,6 +190,7 @@ parser.add_argument('--level', type=int, default=1, help='Level at which to appl
 parser.add_argument('--seed', type=int, help='Random seed')
 parser.add_argument('--timer', action='store_true', help='Time the training process')
 parser.add_argument('--save-top', type=int, default=200, help='Number of top results to save')
+parser.add_argument('--batch-size', type=int, default=48, help='Batch size for predictions. Only used if --model is EMBEDDINGS or FASTFIT')
 
 
 

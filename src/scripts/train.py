@@ -5,6 +5,12 @@ import os
 
 tqdm.pandas()
 
+
+
+def bold(string):
+    return f'\033[1m{string}\033[0m'
+
+
 def train_test_split(x, y=None, test_size=0.2,shuffle=False, seed=42):
     if shuffle:
         x = x.sample(frac=1,random_state=seed).reset_index(drop=True)
@@ -26,15 +32,13 @@ def stratified_sample(dataset,label_column: str = 'relevance',num_samples_per_la
 
 
 def train_cuML(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-1', test_frac=0.2, seed=42, timer=False, **kwargs):
-    from CuML.Trainer import CuMLTrainer
-    from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
-
-    del kwargs['embedding_model'], kwargs['chunk_size'], kwargs['samples_per_label'], kwargs['batch_size'] # only relevant for FastFit, remove now to suppress warning later on
 
     print('\nLoading data...\n')
     import cudf as pd
     data = pd.read_json(input_path, encoding='latin-1')
     print('Data loaded. ')
+
+    del kwargs['embedding_model'], kwargs['chunk_size'], kwargs['samples_per_label'], kwargs['batch_size'] # only relevant for FastFit, remove now to suppress warning later on
 
 
     print('Splitting data...')
@@ -42,9 +46,12 @@ def train_cuML(input_path: str='../../data/level-0.5/data.json', output_path='./
     print('Data split.\n')
 
     print('Initialising CuML trainer...')
+    from CuML.Trainer import CuMLTrainer
+    from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
+
     trainer = CuMLTrainer(TIMER=timer)
     trainer.set_data(train, test)
-    print(trainer.data_info())
+    trainer.data_info()
 
     classifier = LogisticRegressionClassifier(**kwargs)
     trainer.set_classifier(classifier)
@@ -65,20 +72,11 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
     if model_name is None:
         print('No embedding model specified. Defaulting to avsolatorio/GIST-Embedding-v0...')
 
-    from FastFit.Trainer import FastFitTrainer
-    trainer = FastFitTrainer(TIMER=timer)
-
-
 
     print('\nLoading data...')
     import pandas as pd
     data = pd.read_json(input_path, encoding='latin-1')
-
     print('Data loaded. ')
-
-    # add 'classification' prepended to each text
-
-    data['text'] = data['text'].progress_apply(lambda x: 'classification ' + x)
 
     print('Splitting data...')
     train, test = train_test_split(data, test_size=test_frac, shuffle=True if seed is not None else False, seed=seed)
@@ -102,7 +100,12 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
     # val = val.sample(500, random_state=seed)
     print('Data downsampled.\n')
 
+
+
     print('Converting data to FastFit format...')
+    from FastFit.Trainer import FastFitTrainer
+    trainer = FastFitTrainer(TIMER=timer)
+
     trainer.set_data(train, test, val)
     trainer.data_info()
 

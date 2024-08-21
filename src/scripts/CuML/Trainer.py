@@ -5,6 +5,9 @@ import os
 
 tqdm.pandas()
 
+def bold(string):
+    return f'\033[1m{string}\033[0m'
+
 
 class CuMLTrainer:
 
@@ -38,7 +41,7 @@ class CuMLTrainer:
         print('Training on ', len(self.train), ' files')
         s = len(self.train) / 250
         m, s = divmod(s, 60)
-        print('Estimated time: ', m, ' minutes ', int(s), ' seconds')
+        print(bold('\nEstimated time: '), m, ' minutes ', int(s), ' seconds\n')
 
         if self.TIMER:
             import time
@@ -60,10 +63,10 @@ class CuMLTrainer:
         print('\nTesting classifier...')
 
         # roughly 90 files/second, I imagine it'll get relatively faster with more data
-        print('Testing on ', len(self.train), ' files')
-        s = len(self.train) / 90
+        print('Testing on ', len(self.test), ' files')
+        s = len(self.test) / 90
         m, s = divmod(s, 60)
-        print('Estimated time: ', m, ' minutes ', int(s), ' seconds')
+        print('\nEstimated time: ', m, ' minutes ', int(s), ' seconds\n')
 
 
         if self.TIMER:

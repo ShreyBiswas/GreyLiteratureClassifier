@@ -6,6 +6,8 @@ from datasets import Dataset
 
 tqdm.pandas()
 
+def bold(string):
+    return f'\033[1m{string}\033[0m'
 
 class FastFitTrainer:
 
@@ -105,6 +107,6 @@ class FastFitTrainer:
         self.model.save_pretrained(output_path)
 
 
-        print(f'Classifier saved to {output_path}.\n')
+        print(bold(f'Classifier saved to {output_path}.\n'))
 
 

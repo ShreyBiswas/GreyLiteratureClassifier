@@ -55,8 +55,8 @@ class FastFitClassifier:
 
         i = 0
 
-        with tqdm(total=len(chunk_id_counts),desc='Files', position=0, leave=True) as files_pbar:
-            with tqdm(total=len(chunked_text),desc='Chunks',miniters=100, position=1, leave=True) as chunks_pbar:
+        with tqdm(total=len(chunk_id_counts),desc='Files', position=0, leave=True, smoothing=0.1) as files_pbar:
+            with tqdm(total=len(chunked_text),desc='Chunks',miniters=batch_size/4, position=1, leave=True) as chunks_pbar:
 
                 for output in self.classifier(chunked_text,batch_size=batch_size,num_workers=16,truncation=True):
                     predictions.append(output['label'])
@@ -85,6 +85,7 @@ class FastFitClassifier:
         aggregate="majority",
         batch_size=64,
         level=2,
+        penalise_short_texts=True,
     ):
 
 
@@ -112,37 +113,35 @@ class FastFitClassifier:
 
 
 
+
+        if penalise_short_texts:
+            from math import exp
+
+            def score_func(x):
+                return x.mean() * (1 / (1 + exp(-(len(x)-1))))
+
+            # penalises shorter texts by multiplying their score by a sigmoid function
+            # it should only have a very slight effect, being above 0.9x for 3 pages
+            # but should change the final ranking slightly
+        else:
+            score_func = lambda x: x.mean()
+
         if aggregate == "majority":
-            grouped = chunked_data.groupby("chunk_id").agg({
-                'predictions': lambda x: x.mode().iloc[0],
-                'score': 'mean'
-                }
-            )
-            data['predictions'] = grouped['predictions']
-            data[f'score-lv{level}'] = grouped['score']
-
+            predictions_func = lambda x: x.mode().iloc[0]
         elif aggregate == "all":
-            grouped = chunked_data.groupby("chunk_id").agg({
-                'predictions': lambda x: (
-                    "relevant" if (x.unique() == "relevant").all() else "irrelevant"
-                ),
-                'score': 'mean'
-                }
-            )
-            data['predictions'] = grouped['predictions']
-            data[f'score-lv{level}'] = grouped['score']
-
+            predictions_func = lambda x: "relevant" if (x.unique() == "relevant").all() else "irrelevant"
         elif aggregate == "any":
-            grouped = chunked_data.groupby("chunk_id").agg({
-                'predictions': lambda x: (
-                    "relevant" if (x.unique() == "relevant").any() else "irrelevant"
-                ),
-                'score': 'mean'
-                }
-            )
-            data['predictions'] = grouped['predictions']
-            data[f'score-lv{level}'] = grouped['score']
+            predictions_func = lambda x: "relevant" if (x.unique() == "relevant").any() else "irrelevant"
 
+
+        grouped = chunked_data.groupby("chunk_id").agg({
+            'predictions': predictions_func,
+            'score': score_func
+            }
+        )
+
+        data['predictions'] = grouped['predictions']
+        data[f'score-lv{level}'] = grouped['score']
 
         return data
 
