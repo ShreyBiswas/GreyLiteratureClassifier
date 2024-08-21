@@ -645,9 +645,12 @@ def main(scrape_studies: bool = False,
         print(f'\n{bold("************ WARNING ************")}\n\n')
         print(f'You are about to clean irrelevant data. This process will remove all irrelevant data from the provided path, and combine them into a single file in level-0.5. ')
         print(f'If the original batch files are not backed up, {bold("they will be lost")}. Only proceed if this is intended.')
-        print(f'\nAre you sure you want to proceed? The process will begin in 5 seconds; {bold("terminate it now if needed")}.')
         print(f'\n\n {bold("********************************")}\n\n')
-        sleep(5)
+        for i in range(9,0,-1):
+            print(f'{bold("Are you sure you want to proceed?")} The process will begin in {i} seconds; {bold("terminate it now if needed")}.',end='\r')
+            sleep(1)
+
+        print('\n\nProceeding...\n\n')
 
 
 
@@ -709,7 +712,7 @@ def main(scrape_studies: bool = False,
 
 
 parser = argparse.ArgumentParser()
-# parser.set_defaults(func=main)
+
 parser.add_argument('--scrape-studies', action='store_true', help='Scrape studies from Conservation Evidence website, and save raw format before cleaning.')
 parser.add_argument('--scrape-spreadsheet', action='store_true', help='Scrape action evidence from spreadsheet, and save raw format before cleaning.')
 parser.add_argument('--raw-spreadsheet-path', type=str, help='Path to raw spreadsheet data. Only used if --scrape-spreadsheet is set.')

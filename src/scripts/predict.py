@@ -128,7 +128,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
         import time
         start = time.time()
 
-    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=batch_size, level=level, penalise_short_texts=False)
+    predictions = classifier.evaluate(data, metrics=['accuracy', 'precision', 'classification-report', 'confusion_matrix'], aggregate='majority', batch_size=batch_size, level=level, penalise_short_texts=True)
 
     if timer:
         end = time.time()
