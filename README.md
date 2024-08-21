@@ -3,6 +3,7 @@
 #### Notes
 - `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go.
 - It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
+- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements. It's already handled in requirements.txt.
 
 ### Model Levels
 
@@ -35,6 +36,24 @@ The best candidates from each layer will be saved into `results/level-x.5`.
 - Download Irrelevant Data from Kacper's scraper. Save each batch to `data/unprocessed/irrelevant/...`.  \
 *Ideally, these batches should be the same size for accurate loading time estimation, but this isn't necessary.*
 
+Irrelevant batch files should be in the form of a JSON file, with at least the below fields:
+```JSON
+{
+    'Batch':
+        [
+            {
+                'URL': 'https...',
+                'ExtractedTextUntokenized': 'abc...',
+            },
+            {
+                'URL': '...co.uk',
+                'ExtractedTextUntokenized': '...xyz',
+            },
+            ...
+        ]
+}
+```
+Where ExtractedTextUntokenized is null, I'll try to re-scrape the PDF using the URL.
 
 ### Data Processing
 
@@ -64,12 +83,15 @@ python preprocess.py \
     --irrelevant_path=None
 ```
 
-When models have been trained and we're simpy performing inference on new data, use the `--only-irrelevant` flag to skip all steps except preparing new data.
+When models have been trained and we're simpy performing inference on new data, use the `--only-irrelevant` flag to skip all steps except preparing new data.   \
+Use --remove-files to clean up files that have been processed, and --limit-irrelevant if we don't want to use the entire set of scraped articles. Files excluded due to the limit are left in the folder, and can be incorporated during the next run.
 
 ```bash
 python preprocess.py \
     --use-default-paths \
-    --only-irrelevant
+    --only-irrelevant \
+    --limit-irrelevant 10000 \
+    --remove-files
 ```
 
 
@@ -145,12 +167,7 @@ python predict.py \
     --level 2 \
     --timer
 ```
-
+*Note: If you get ValueError: Unrecognized model identifier, try another model.*
 
 The final results can be viewed in `results/level-2.5/urls.csv`. This will be a list of URLs sorted by their predicted relevance score.  \
 For further processing, all data output is stored in `data/level-x.5/potential.json`; so, to add levels after 2.5, read `data/level-2.5/potential.json`.
-
-
-TODO: Track the modifications made to FastFit - they're all in the notebooks right now.
-TODO: Clean up the file structures.
-TODO: Add trust_remote_code to FastFit to enable the use of better models.

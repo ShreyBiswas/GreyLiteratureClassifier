@@ -7,7 +7,7 @@ from pickle import load
 
 tqdm.pandas()
 
-def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, level=1, seed=42, save_top=100, timer=False ):
+def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, level=1, seed=42, save_top=100, timer=False, **kwargs ):
     from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
 
     print(f'\nLoading model from {model_path}...')

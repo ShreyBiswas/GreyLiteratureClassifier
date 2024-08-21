@@ -76,6 +76,10 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
 
     print('Data loaded. ')
 
+    # add 'classification' prepended to each text
+
+    data['text'] = data['text'].progress_apply(lambda x: 'classification ' + x)
+
     print('Splitting data...')
     train, test = train_test_split(data, test_size=test_frac, shuffle=True if seed is not None else False, seed=seed)
     train, val = train_test_split(train, test_size=0.2, shuffle=True if seed is not None else False, seed=seed)

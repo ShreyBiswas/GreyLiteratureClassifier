@@ -260,7 +260,7 @@ def scrape_spreadsheet_func(path: str=None):
 
     print('Spreadsheet data saved.')
 
-def clean_irrelevant(path: str=None):
+def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files: bool=False):
 
     if path is None:
         print('No irrelevant data provided. Skipping...')
@@ -274,28 +274,49 @@ def clean_irrelevant(path: str=None):
     batches = []
 
     print('Cleaning irrelevant data.')
-    print('Loading...')
 
-    for i,file in enumerate(tqdm(files, unit_scale=len(json.load(open(path + files[0]))['Batch']))):
-        with open(path + file,'r') as f:
-            try:
-                batches.extend(json.load(f)['Batch'])
-            except:
-                errors.append(file)
-                continue
 
-    # data = pd.DataFrame.from_dict(data, orient='index',columns=['URL', 'ExtractedTextUntokenized','RawData'])
-    data = pd.DataFrame(batches,columns=['URL', 'ExtractedTextUntokenized','RawData'])
 
-    print('Irrelevant data loaded. Removing corrupt files...')
+    if limit_irrelevant == float('inf'):
+        print(f'Loading...')
+        uncapped = True # don't stop if we hit the limit due to a bad estimate
+        limit_irrelevant = len(files) * len(json.load(open(path + files[0]))['Batch']) # estimate
+    else:
+        print(f'Loading ~{int(limit_irrelevant)} files...')
+        uncapped = False
+
+    with tqdm(files, total=int(limit_irrelevant), leave=True) as pbar:
+        for file in files:
+            with open(path + file,'r') as f:
+                try:
+                    new_data = json.load(f)['Batch']
+                    batches.extend(new_data)
+
+                    if remove_files:
+                        os.remove(path + file)
+                    pbar.update(len(new_data))
+
+                    if len(batches) >= limit_irrelevant and not uncapped:
+                        break
+
+                except Exception as e:
+                    errors.append(file)
+                    print('Error loading', file, ':', e)
+                    continue
+
+
+    data = pd.DataFrame(batches,columns=['URL', 'ExtractedTextUntokenized'])
+
+    print(f'\n{len(data)} irrelevant articles loaded. \nRemoving corrupt files...')
 
 
     for file in errors:
         try:
-            os.remove('data/unprocessed/irrelevant/' + file)
+            print('Removing', path + file)
+            os.remove(path + file)
         except FileNotFoundError:
             continue
-    print('Removed', len(errors), 'broken files.')
+    print('Removed', len(errors), 'broken JSON files.')
 
     import concurrent.futures
 
@@ -643,12 +664,13 @@ def main(scrape_studies: bool = False,
 
 
 
+
     if kwargs.get('only_irrelevant', False):
-        clean_irrelevant(irrelevant_path)
+        clean_irrelevant(irrelevant_path, kwargs.get('limit_irrelevant')) # creates data/level-0.5/irrelevant.json
         return
 
     #* CLEANING
-    clean_irrelevant(irrelevant_path) # creates data/level-0.5/irrelevant.json
+    clean_irrelevant(irrelevant_path, kwargs.get('limit_irrelevant')) # creates data/level-0.5/irrelevant.json
     print('\n\n')
     clean_spreadsheet(spreadsheet_path) # creates data/level-0.5/scraped/scraped.json
     print('\n\n')
@@ -679,7 +701,9 @@ parser.add_argument('--spreadsheet-path', type=str, help='Path to scraped data. 
 parser.add_argument('--synopses-path', type=str, help='Path to synopses data. Skipped if not provided and --use-default-paths is not set.')
 parser.add_argument('--studies-path', type=str, help='Path to studies data. Skipped if not provided and --use-default-paths is not set.')
 parser.add_argument('--use-default-paths', action='store_true', help='Use default paths for data sources. Override by providing explicit paths.')
+parser.add_argument('--remove-files', action='store_true', help='Remove irrelevant data files after cleaning.')
 parser.add_argument('--only-irrelevant', action='store_true', help='Only clean irrelevant data. Use if preprocessing data for pretrained model.')
+parser.add_argument('--limit-irrelevant', type=float, default=float('inf'), help='Number of irrelevant samples to clean. Default is uncapped.')
 
 
 if __name__ == '__main__':
@@ -688,8 +712,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # call main
-    if args.only_irrelevant:
-        clean_irrelevant(args.irrelevant_path)
-    else:
-        main(**vars(args))
+    main(**vars(args))
 
