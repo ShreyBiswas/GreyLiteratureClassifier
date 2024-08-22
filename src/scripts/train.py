@@ -66,7 +66,7 @@ def train_cuML(input_path: str='../../data/level-0.5/data.json', output_path='./
 
 
 
-def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-2/', test_frac=0.2, seed=42, timer=False, **kwargs):
+def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-2/', test_frac=0.2, seed=42, timer=False, batch_size=32, samples_per_label=500, **kwargs):
 
     model_name = kwargs.get('embedding_model', 'avsolatorio/GIST-Embedding-v0')
     if model_name is None:
@@ -92,7 +92,7 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
     print('Data chunked.\n')
 
     print('Downsampling data...')
-    train = stratified_sample(train, num_samples_per_label=kwargs.get('samples_per_label', 500))
+    train = stratified_sample(train, num_samples_per_label=samples_per_label)
     test = test.sample(200, random_state=seed)
     val = val.sample(100, random_state=seed)
     # train = train.sample(frac=1, random_state=seed)
@@ -112,7 +112,7 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
 
 
     print('\nInitialising FastFit trainer...')
-    trainer.set_trainer(model_name=model_name, max_len=chunk_size, batch_size=kwargs.get('batch_size', 32), output_dir=output_path)
+    trainer.set_trainer(model_name=model_name, max_len=chunk_size, batch_size=batch_size, output_dir=output_path)
 
     print('Initialisation complete.\n')
 
