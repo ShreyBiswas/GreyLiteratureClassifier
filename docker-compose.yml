@@ -1,8 +1,6 @@
-version: '3.4'
-
 services:
   GreyLitClassifier:
-    image: GreyLitDocker
+    image: greylitdockerimage
     container_name: GreyLitContainer
     build:
       context: .
@@ -24,4 +22,3 @@ services:
       memlock: -1
       stack: 67108864
     ipc: host
-    
