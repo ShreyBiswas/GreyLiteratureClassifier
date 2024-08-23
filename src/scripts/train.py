@@ -31,11 +31,14 @@ def stratified_sample(dataset,label_column: str = 'relevance',num_samples_per_la
 
 
 
-def train_cuML(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-1', test_frac=0.2, seed=42, timer=False, **kwargs):
+def train_cuML(data_path: str='../../data/level-0.5/data.json', output_path='./models/level-1', test_frac=0.2, seed=42, timer=False, **kwargs):
+
+    del kwargs['model'] # stops an unused argument warning later on
+
 
     print('\nLoading data...\n')
     import cudf as pd
-    data = pd.read_json(input_path, encoding='latin-1')
+    data = pd.read_json(data_path, encoding='latin-1')
     print('Data loaded. ')
 
     del kwargs['embedding_model'], kwargs['chunk_size'], kwargs['samples_per_label'], kwargs['batch_size'] # only relevant for FastFit, remove now to suppress warning later on

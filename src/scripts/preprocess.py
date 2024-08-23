@@ -286,7 +286,7 @@ def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files:
         uncapped = True # don't stop if we hit the limit due to a bad estimate
         limit_irrelevant = len(files) * len(json.load(open(path + files[0]))['Batch']) # estimate
     else:
-        print(f'Loading ~{int(limit_irrelevant)} files...')
+        print(f'Loading up to {int(limit_irrelevant)} files...')
         uncapped = False
 
     with tqdm(files, total=int(limit_irrelevant), leave=True) as pbar:

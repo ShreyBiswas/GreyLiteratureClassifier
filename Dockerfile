@@ -11,18 +11,14 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt --extra-index-url=https://pypi.nvidia.com
+
+
 # RUN python -m pip list --format=freeze > requirements.txt
 
 WORKDIR /GreyLiteratureClassifier/src/scripts
 
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
-
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-# CMD ["sh", "workflow.sh"]
+# CMD ["bash", "-x", "workflow.sh"]
 
 # open a shell
-CMD ["/bin/bash"]
+CMD ["sh", "workflow.sh"]
 
