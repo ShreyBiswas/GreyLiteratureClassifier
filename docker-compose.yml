@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+  GreyLitClassifier:
+    image: GreyLitDocker
+    container_name: GreyLitContainer
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - type: bind
+        source: .
+        target: /GreyLiteratureClassifier
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    stdin_open: true
+    tty: true
+    ulimits:
+      memlock: -1
+      stack: 67108864
+    ipc: host
+    

@@ -3,7 +3,8 @@
 #### Notes
 - `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go.
 - It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
-- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements. It's already handled in requirements.txt.
+- Use `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com`.
+- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so install from there instead of the Pipfile.
 
 ### Model Levels
 
@@ -20,6 +21,10 @@ The entire workflow is split into levels.
 More levels can be added for more precise models, or levels can be swapped out.
 
 The best candidates from each layer will be saved into `results/level-x.5`.
+
+## Docker Setup
+
+
 
 
 ## Building Datasets
