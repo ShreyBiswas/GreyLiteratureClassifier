@@ -33,6 +33,8 @@ def stratified_sample(dataset,label_column: str = 'relevance',num_samples_per_la
 
 def train_cuML(data_path: str='../../data/level-0.5/data.json', output_path='./models/level-1', test_frac=0.2, seed=42, timer=False, **kwargs):
 
+    print(f'\n\n{bold("************ TRAINING CuML MODEL ************")}\n')
+
     del kwargs['model'] # stops an unused argument warning later on
 
 
@@ -69,11 +71,16 @@ def train_cuML(data_path: str='../../data/level-0.5/data.json', output_path='./m
 
 
 
-def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-2/', test_frac=0.2, seed=42, timer=False, batch_size=32, samples_per_label=500, **kwargs):
+def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_path='./models/level-2/', test_frac=0.2, seed=42, timer=False, batch_size=32, samples_per_label=None, **kwargs):
+
 
     model_name = kwargs.get('embedding_model', 'avsolatorio/GIST-Embedding-v0')
     if model_name is None:
         print('No embedding model specified. Defaulting to avsolatorio/GIST-Embedding-v0...')
+
+
+    print(f'\n\n{bold("************ TRAINING EMBEDDING MODEL ************")}\n')
+    print(f'{bold(model_name)}\n')
 
 
     print('\nLoading data...')
@@ -95,6 +102,8 @@ def train_embeddings(input_path: str='../../data/level-0.5/data.json', output_pa
     print('Data chunked.\n')
 
     print('Downsampling data...')
+    if samples_per_label is None:
+        samples_per_label = len(train)  # guaranteed to be at least the largest class, so effectively uncapped
     train = stratified_sample(train, num_samples_per_label=samples_per_label)
     test = test.sample(200, random_state=seed)
     val = val.sample(100, random_state=seed)
@@ -151,7 +160,7 @@ parser.add_argument('--vectorizer', type=str, default='HashingVectorizer', help=
 parser.add_argument('--timer', action='store_true', help='Time the training process')
 parser.add_argument('--embedding-model', type=str, default='avsolatorio/GIST-Embedding-v0', help='Embedding model to use. Only used if --model is EMBEDDINGS or FASTFIT')
 parser.add_argument('--chunk-size', type=int, default=512, help='Size of chunks to process data in. Only used if --model is EMBEDDINGS or FASTFIT')
-parser.add_argument('--samples-per-label', type=int, default=100, help='Number of samples to use per label. Only used if --model is EMBEDDINGS or FASTFIT')
+parser.add_argument('--samples-per-label', type=int, default=None, help='Number of samples to use per label. Leave excluded for uncapped. Only used if --model is EMBEDDINGS or FASTFIT')
 parser.add_argument('--batch-size', type=int, default=32, help='Batch size for training. Only used if --model is EMBEDDINGS or FASTFIT')
 
 

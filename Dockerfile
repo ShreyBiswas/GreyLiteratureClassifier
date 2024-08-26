@@ -20,5 +20,8 @@ WORKDIR /GreyLiteratureClassifier/src/scripts
 # CMD ["bash", "-x", "workflow.sh"]
 
 # open a shell
+# CMD ["bash"]
+
+
 CMD ["sh", "workflow.sh"]
 

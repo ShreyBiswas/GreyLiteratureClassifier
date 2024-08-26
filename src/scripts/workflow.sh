@@ -38,7 +38,7 @@ python train.py \
     --output-path=./models/level-2/ \
     --chunk-size 512 \
     --batch-size 64 \
-    --samples-per-label 10000 \
+    --samples-per-label 1000000 \
     --timer
 
 python train.py \
@@ -48,7 +48,7 @@ python train.py \
     --output-path=./models/level-2/ \
     --chunk-size 512 \
     --batch-size 16 \
-    --samples-per-label 1000 \
+    --samples-per-label 100000 \
     --timer
 
 python train.py \
@@ -58,7 +58,7 @@ python train.py \
     --output-path=./models/level-2/ \
     --chunk-size 512 \
     --batch-size 16 \
-    --samples-per-label 1000 \
+    --samples-per-label 100000 \
     --timer
 
 python train.py \

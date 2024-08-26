@@ -1,10 +1,11 @@
 # Grey-Literature-Classifier
 
 #### Notes
-- `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go.
+- `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go. Alternatively, use `src/scripts/workflow.sh`.
 - It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
 - Use `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com`.
 - Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so install from there instead of the Pipfile.
+
 
 ### Model Levels
 
@@ -24,7 +25,19 @@ The best candidates from each layer will be saved into `results/level-x.5`.
 
 ## Docker Setup
 
+Move the current working directory to GreyLiteratureClassifier.
 
+From here, if you want to run `workflow.sh` and automatically remove the container afterwards, run `docker compose up`.
+
+If you want to launch a terminal within the container for more flexibility, run `docker compose run --rm GreyLiteratureClassifier`. This opens up a bash shell inside the terminal in GreyLiteratureContainer; from here you can work as usual.  \
+When you're finished, run `exit` to close the terminal as usual; Docker will shut down and remove the container.
+
+> [!TIP] Opening for development
+> First, launch the terminal with `docker compose run --rm GreyLiteratureClassifier`. Then, open VSCode, use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLitClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
+> When the new VSCode window opens, go to the `/GreyLiteratureClassifier/` folder (go one level up from `root` first).
+
+
+*Timing Estimates: Pulling image (~20min), Installing packages (~15min)*
 
 
 ## Building Datasets

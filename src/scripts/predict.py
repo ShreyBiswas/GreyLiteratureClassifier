@@ -14,6 +14,10 @@ def bold(string):
 
 
 def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path='../../data/level-0.5/data.json', output_path=None, level=1, seed=42, save_top=100, timer=False, **kwargs ):
+
+    print(f'\n\n{bold(f"************ RUNNING LEVEL {level} PREDICTIONS WITH CuML MODEL ************")}\n')
+    print(f'{bold("Model: ")}{model_path.split('\\')[:-2]}\n')
+
     from CuML.cuML_LogisticRegressionClassifier import LogisticRegressionClassifier
 
     print(f'\nLoading model from {model_path}...')
@@ -92,6 +96,9 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
 
 def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/GIST-embedding-v0', data_path='./data/level-0.5/data.json', output_path=None, level=2, seed=42, save_top=100, timer=False, batch_size=48, **kwargs):
+
+    print(f'\n\n{bold(f"************ RUNNING LEVEL {level} PREDICTIONS WITH EMBEDDING MODEL ************")}\n')
+    print(f'{bold("Model: ")}{model_path.split("\\")[:-2]}\n')
 
     print('\nInitialising classifier...')
 
