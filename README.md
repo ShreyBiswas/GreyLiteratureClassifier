@@ -32,6 +32,8 @@ From here, if you want to run `workflow.sh` and automatically remove the contain
 If you want to launch a terminal within the container for more flexibility, run `docker compose run --rm GreyLiteratureClassifier`. This opens up a bash shell inside the terminal in GreyLiteratureContainer; from here you can work as usual.  \
 When you're finished, run `exit` to close the terminal as usual; Docker will shut down and remove the container.
 
+Don't worry - the folder is mounted as a bind-mount, so new files (like models or results) will persist when the container is removed.
+
 > [!TIP] Opening for development
 > First, launch the terminal with `docker compose run --rm GreyLiteratureClassifier`. Then, open VSCode, use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLitClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
 > When the new VSCode window opens, go to the `/GreyLiteratureClassifier/` folder (go one level up from `root` first).
