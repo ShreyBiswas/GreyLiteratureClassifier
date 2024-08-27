@@ -27,16 +27,16 @@ The best candidates from each layer will be saved into `results/level-x.5`.
 
 Move the current working directory to GreyLiteratureClassifier.
 
-From here, if you want to run `workflow.sh` and automatically remove the container afterwards, run `docker compose up`.
-
-If you want to launch a terminal within the container for more flexibility, run `docker compose run --rm GreyLiteratureClassifier`. This opens up a bash shell inside the terminal in GreyLiteratureContainer; from here you can work as usual.  \
-When you're finished, run `exit` to close the terminal as usual; Docker will shut down and remove the container.
+Start by running `docker compose run --rm --build GreyLiteratureClassifier`. This will set up the container, and launch a bash terminal within it. The default CWD is `/src/scripts`, though you can change as usual with `cd`.   \
+From here, you can either run `sh workflow.sh` to execute several commands in sequence, or execute the Python files individually (or any other command, really).  \
+When you're finished, run `exit` to close the terminal as usual; Docker will shut down and automatically remove the container.
 
 Don't worry - the folder is mounted as a bind-mount, so new files (like models or results) will persist when the container is removed.
 
 > [!TIP] Opening for development
-> First, launch the terminal with `docker compose run --rm GreyLiteratureClassifier`. Then, open VSCode, use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLitClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
-> When the new VSCode window opens, go to the `/GreyLiteratureClassifier/` folder (go one level up from `root` first).
+> First, launch the terminal with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
+> Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
+> When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
 
 
 *Timing Estimates: Pulling image (~20min), Installing packages (~15min)*

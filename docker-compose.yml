@@ -1,5 +1,5 @@
 services:
-  GreyLitClassifier:
+  GreyLiteratureClassifier:
     image: greylitdockerimage
     container_name: GreyLitContainer
     build:
@@ -18,7 +18,7 @@ services:
               capabilities: [ gpu ]
     stdin_open: true
     tty: true
-    command: /bin/bash
+    command: "/bin/bash"
     ulimits:
       memlock: -1
       stack: 67108864

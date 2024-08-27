@@ -10,18 +10,15 @@ ENV PYTHONUNBUFFERED=1
 # Install pip requirements
 COPY requirements.txt .
 RUN python -m pip install --upgrade pip
-RUN python -m pip install -r requirements.txt --extra-index-url=https://pypi.nvidia.com
+# RUN python -m pip install -r requirements.txt --extra-index-url=https://pypi.nvidia.com
 
 
 # RUN python -m pip list --format=freeze > requirements.txt
 
 WORKDIR /GreyLiteratureClassifier/src/scripts
 
-# CMD ["bash", "-x", "workflow.sh"]
 
-# open a shell
-# CMD ["bash"]
+# command is in docker-compose.yml
 
-
-CMD ["sh", "workflow.sh"]
-
+# CMD ["sh", "workflow.sh"]
+CMD ["ls"]
