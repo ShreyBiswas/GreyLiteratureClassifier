@@ -24,13 +24,15 @@ For example, to automatically run `workflow.sh` after setting up the container, 
 
 *Timing Estimates: Pulling image (~20min), Installing packages (~15min).*
 
-> [!TIP]
-> Helpful advice for doing things better or more easily.
 
-> [!TIP] Opening for development
-> First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
-> Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
-> When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+
+### Opening for development
+First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
+Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.  \
+When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+
+Now, you can edit files in VSCode, and run them in the terminal. The terminal is already in the correct folder, so you can run `sh workflow.sh` or `python preprocess.py` as usual.  \
+When you're done, as before, close the terminal and VSCode window, and run `exit` in the Docker terminal to shut down the container.
 
 For notes on each Python program (preprocess/train/predict), scroll further down.
 
