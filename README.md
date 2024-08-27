@@ -19,10 +19,13 @@ If you want to automatically run a command after setting up the container (inste
 If this command is a .sh script (like `workflow.sh`), and that .sh file ends in `/bin/bash`, then after running, a terminal inside the container will open. If it's something else (e.g a Python command, or a .sh script that doesn't call `/bin/bash`), the container will automatically exit and remove itself.
 
 
-For example, to automatically run `workflow.sh` after setting up the container, use `docker compose run --rm --build GreyLiteratureClassifier sh workflow.sh`
+For example, to automatically run `workflow.sh` after setting up the container, use `docker compose run --rm --build GreyLiteratureClassifier sh workflow.sh`.
 
 
 *Timing Estimates: Pulling image (~20min), Installing packages (~15min).*
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
 
 > [!TIP] Opening for development
 > First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
@@ -95,7 +98,7 @@ Irrelevant batch files should be in the form of a JSON file, with at least the b
         ]
 }
 ```
-Where ExtractedTextUntokenized is null, I'll try to re-scrape the PDF using the URL.
+Where ExtractedTextUntokenized is null, I'll try to re-scrape the PDF using the URL and PyMuPDF.
 
 ### Data Processing
 
