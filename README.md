@@ -1,13 +1,36 @@
 # Grey-Literature-Classifier
 
-#### Notes
-- `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference or to run all commands sequentially in one go. Alternatively, use `src/scripts/workflow.sh`.
-- It may be helpful to use `alias py='/workspace/GreyLit/venv/bin/python'` when working from the Docker container, and use this command instead of `python` below.
-- Use `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com`.
-- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so install from there instead of the Pipfile.
+
+---
+
+## Docker Setup
+
+Move the current working directory to GreyLiteratureClassifier.
+
+Start by running `docker compose run --rm --build GreyLiteratureClassifier`. This will set up the container, and launch a bash terminal within it. The default CWD is `/src/scripts`, though you can change as usual with `cd`.   \
+From here, you can either run `sh workflow.sh` to execute several commands in sequence, or execute the Python files individually (or any other command, really).  \
+When you're finished, run `exit` to close the terminal as usual; Docker will shut down and automatically remove the container.
+
+Don't worry - the folder is mounted as a bind-mount, so new files (like models or results) will persist when the container is removed.
+
+Note that if you want to automatically run a command after setting up the container (instead of opening a terminal), then just append that command to the `docker compose run` call above.  \
+If this command is a .sh script (like `workflow.sh`), and that .sh file ends in `/bin/bash`, then after running, a terminal inside the container will open. If it's something else (e.g a Python command, or a .sh script that doesn't call `/bin/bash`), the container will automatically exit and remove itself.
+For example, to automatically run `workflow.sh` after setting up the container, use `docker compose run --rm --build GreyLiteratureClassifier sh workflow.sh`
 
 
-### Model Levels
+*Timing Estimates: Pulling image (~20min), Installing packages (~15min).*
+
+> [!TIP] Opening for development
+> First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
+> Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
+> When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+
+For notes on each Python program (preprocess/train/predict), scroll further down.
+
+
+---
+
+### File Structure & Model Levels
 
 The entire workflow is split into levels.
 
@@ -23,23 +46,16 @@ More levels can be added for more precise models, or levels can be swapped out.
 
 The best candidates from each layer will be saved into `results/level-x.5`.
 
-## Docker Setup
 
-Move the current working directory to GreyLiteratureClassifier.
-
-Start by running `docker compose run --rm --build GreyLiteratureClassifier`. This will set up the container, and launch a bash terminal within it. The default CWD is `/src/scripts`, though you can change as usual with `cd`.   \
-From here, you can either run `sh workflow.sh` to execute several commands in sequence, or execute the Python files individually (or any other command, really).  \
-When you're finished, run `exit` to close the terminal as usual; Docker will shut down and automatically remove the container.
-
-Don't worry - the folder is mounted as a bind-mount, so new files (like models or results) will persist when the container is removed.
-
-> [!TIP] Opening for development
-> First, launch the terminal with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
-> Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.
-> When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+---
 
 
-*Timing Estimates: Pulling image (~20min), Installing packages (~15min)*
+
+#### If Manually Building (sans docker-compose)
+
+- Use `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com` to install all requirements.
+- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so just using it should handle this.
+- `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference. Alternatively, run `src/scripts/workflow.sh` to set up and execute several commands at once.
 
 
 ## Building Datasets
@@ -114,6 +130,7 @@ python preprocess.py \
     --remove-files
 ```
 
+---
 
 ## Training Models
 
@@ -152,6 +169,20 @@ python train.py \
 ```
 
 Parameters can be tweaked as necessary to speed up execution or fit the GPU being used.
+
+To get recommended batch sizes for the Alienware, find the Memory Usage (in GB, for fp32), and the Max Tokens it'll use. These are available on the model page, or aggregated on the MTEB Leaderboard.
+
+Plug them into the below function:
+```python
+def recommended_batch_size(memory_use, max_tokens):
+    from math import log2
+    # derived from GIST-Embedding-v0 sizes
+    gist_difficulty = 0.41 * 512
+    difficulty = memory_use * max_tokens
+
+    estimation = gist_difficulty / difficulty * 64
+    return 2**int(log2(estimation))
+```
 
 
 ## Inference

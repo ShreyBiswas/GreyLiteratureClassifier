@@ -20,5 +20,5 @@ WORKDIR /GreyLiteratureClassifier/src/scripts
 
 # command is in docker-compose.yml
 
-# CMD ["sh", "workflow.sh"]
-CMD ["ls"]
+# open interactive shell
+CMD ["/bin/bash"]
