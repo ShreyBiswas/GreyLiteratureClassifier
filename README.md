@@ -1,20 +1,24 @@
 # Grey-Literature-Classifier
 
 
----
 
 ## Docker Setup
 
-Move the current working directory to GreyLiteratureClassifier.
+1. Move the current working directory to `~/Grey Lit/GreyLiteratureClassifier/`, or the equivalent on your computer.
 
-Start by running `docker compose run --rm --build GreyLiteratureClassifier`. This will set up the container, and launch a bash terminal within it. The default CWD is `/src/scripts`, though you can change as usual with `cd`.   \
-From here, you can either run `sh workflow.sh` to execute several commands in sequence, or execute the Python files individually (or any other command, really).  \
-When you're finished, run `exit` to close the terminal as usual; Docker will shut down and automatically remove the container.
+2. Start by running `docker compose run --rm --build GreyLiteratureClassifier`. This will set up the container, and launch a bash terminal within it. The default CWD is `/src/scripts`, though you can change as usual with `cd`.   \
+From here, you can either run `sh workflow.sh` to execute several commands in sequence, or execute the Python files individually (or any other command, really).
+
+3. When you're finished, run `exit` to close the terminal as usual; Docker will shut down and automatically remove the container.
 
 Don't worry - the folder is mounted as a bind-mount, so new files (like models or results) will persist when the container is removed.
 
-Note that if you want to automatically run a command after setting up the container (instead of opening a terminal), then just append that command to the `docker compose run` call above.  \
+### Autorun commands on start
+
+If you want to automatically run a command after setting up the container (instead of opening a terminal), then just **append that command to the `docker compose run` call above**. This can be a Python command, an `sh` call to a new script file, just `sh workflow.sh`, or anything else. \
 If this command is a .sh script (like `workflow.sh`), and that .sh file ends in `/bin/bash`, then after running, a terminal inside the container will open. If it's something else (e.g a Python command, or a .sh script that doesn't call `/bin/bash`), the container will automatically exit and remove itself.
+
+
 For example, to automatically run `workflow.sh` after setting up the container, use `docker compose run --rm --build GreyLiteratureClassifier sh workflow.sh`
 
 
@@ -30,9 +34,21 @@ For notes on each Python program (preprocess/train/predict), scroll further down
 
 ---
 
-### File Structure & Model Levels
 
-The entire workflow is split into levels.
+
+### Manually Building (*sans* docker-compose)
+
+1. Again, start by moving the current working directory to `~/Grey Lit/GreyLiteratureClassifier/`, or the equivalent on your computer.
+
+2. Install the required packages using `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com`. This will install all necessary packages, including the modified FastFit version.  \
+    FastFit should be installed from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so just using it should handle this.
+
+3. From here, you can use the command line like usual to run the `.sh` or `.py` files, or start editing them, or delve into the `.ipynb` notebooks.
+
+
+## File Structure & Model Levels
+
+The entire workflow is split into levels. Most folders follow this scheme (e.g in saving models corresponding to a specific level).
 
 - **Unprocessed** data is raw data, downloaded or scraped.
 - **Preprocessing** cleans *Unprocessed* data to produce *Level-0.5* data in Pandas' JSON format.
@@ -44,25 +60,15 @@ The entire workflow is split into levels.
 
 More levels can be added for more precise models, or levels can be swapped out.
 
-The best candidates from each layer will be saved into `results/level-x.5`.
+The best URL candidates from each layer will be saved into `results/level-x.5.csv`, sorted by score. They can be viewed there.
 
-
----
-
-
-
-#### If Manually Building (sans docker-compose)
-
-- Use `pip install -r requirements.txt --extra-index-url https://pypi.nvidia.com` to install all requirements.
-- Make sure to install FastFit from [my modified repository](https://github.com/ShreyBiswas/fastfit) with fixes and improvements - `requirements.txt` has this set up, so just using it should handle this.
-- `src/scripts/workflow.ipynb` contains sample commands for each script, and can be used as a reference. Alternatively, run `src/scripts/workflow.sh` to set up and execute several commands at once.
 
 
 ## Building Datasets
 
 ### Manual Downloads
 
-*---> Unprocessed*
+Layer: *{} ---> Unprocessed*
 
 - Download Scraped Evidence from provided Excel file, containing studies and relevant evidence/classification. Save to `data/unprocessed/raw-grey-literature-sources.csv`.
 
@@ -93,7 +99,7 @@ Where ExtractedTextUntokenized is null, I'll try to re-scrape the PDF using the 
 
 ### Data Processing
 
-*Unprocessed --- `preprocess.py` ---> Level-0.5*
+Layer: *Unprocessed --- `preprocess.py` ---> Level-0.5*
 
 Move the current working directory to `src/scripts`.  \
 We use `preprocess.py` for preprocessing.
@@ -134,8 +140,8 @@ python preprocess.py \
 
 ## Training Models
 
-*Level-0.5 ---> Level-1 models*  \
-*Level-0.5 ---> Level-2 models*
+Layer: *Level-0.5 ---> Level-1 models*  \
+Layer: *Level-0.5 ---> Level-2 models*
 
 Move the current working directory to `src/scripts`.  \
 We use `train.py` for training.
@@ -187,8 +193,8 @@ def recommended_batch_size(memory_use, max_tokens):
 
 ## Inference
 
-*Level-0.5 --- Level-1 ---> Level-1.5*  \
-*Level-1.5 --- Level-2 ---> Level-2.5, results*
+Layer: *Level-0.5 --- Level-1 ---> Level-1.5*  \
+Layer: *Level-1.5 --- Level-2 ---> Level-2.5, results*
 
 Move the current working directory to `src/scripts`.  \
 We use `predict.py` for inference.
