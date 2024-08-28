@@ -1,11 +1,21 @@
-version: '3.4'
-
 services:
-  greylitdocker:
-    image: greylitdocker
+  GreyLiteratureClassifier:
+    image: greylitdockerimagedebug
+    container_name: GreyLitContainerDebug
     build:
       context: .
-      dockerfile: ./Dockerfile
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 src/scripts/preprocess.py "]
-    ports:
-      - 5678:5678
+      dockerfile: ./Dockerfile.debug
+    volumes:
+      - type: bind
+        source: .
+        target: /GreyLiteratureClassifier
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    stdin_open: true
+    tty: true
+    command: "/bin/bash"

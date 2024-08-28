@@ -140,7 +140,7 @@ class FastFitClassifier:
             }
         )
 
-        data['predictions'] = grouped['predictions']
+        data['prediction'] = grouped['predictions']
         data[f'score-lv{level}'] = grouped['score']
 
         return data
@@ -156,7 +156,7 @@ class FastFitClassifier:
 
         print("Evaluating model...\n")
 
-        self.print_metrics(test_data["relevance"], predictions_data["predictions"], metrics=metrics)
+        self.print_metrics(test_data["relevance"], predictions_data["prediction"], metrics=metrics)
 
         return predictions_data
 

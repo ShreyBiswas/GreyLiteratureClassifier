@@ -1,4 +1,4 @@
-# Grey-Literature-Classifier
+# Grey Literature Classifier
 
 
 
@@ -26,15 +26,19 @@ For example, to automatically run `workflow.sh` after setting up the container, 
 
 
 
-### Opening for development
-First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
-Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.  \
-When the new VSCode window opens, you be deposited into the GreyLiteratureClassifier folder. If not, and a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+### Development with VSCode
 
-Now, you can edit files in VSCode, and run them in the terminal. The terminal is already in the correct folder, so you can run `sh workflow.sh` or `python preprocess.py` as usual.  \
-When you're done, as before, close the terminal and VSCode window, and run `exit` in the Docker terminal to shut down the container.
+1. First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
 
-For notes on each Python program (preprocess/train/predict), scroll further down.
+2. Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.  \
+
+3. When the new VSCode window opens, you should be deposited into the GreyLiteratureClassifier folder. If not, and instead a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
+
+4. Now, you can edit files in VSCode, and run them in the terminal with changes instantly reflected (i.e no need to restart the Docker container). The terminal is already in the correct folder, so you can run `sh workflow.sh` or `python preprocess.py ...` as usual.  \
+
+5. When you're done, as before, close the terminal and VSCode window, and run `exit` in the Docker terminal to shut down the container.
+
+For recommendations on using each Python program (preprocess/train/predict), scroll further down. For a quick rundown of flags, just run the Python program with `-h`.
 
 
 ---
@@ -158,6 +162,8 @@ There are two models implemented:
 The recommended flow is to use CuML for Level 1, and Embeddings for Level 2. Both will train on the data from Level 0.5, however, to maximise data usage.
 
 
+
+
 ```bash
 python train.py \
     --model CuML \
@@ -181,13 +187,23 @@ python train.py \
 
 Parameters can be tweaked as necessary to speed up execution or fit the GPU being used.
 
-To get recommended batch sizes for the Alienware, find the Memory Usage (in GB, for fp32), and the Max Tokens it'll use. These are available on the model page, or aggregated on the MTEB Leaderboard.
+Embedding Models are stored in `src/scripts/models/level-2`. The following models are available (sorted by model size):
+- avsolatorio/NoInstruct-small-Embedding-v0
+- avsolatorio/GIST-small-Embedding-v0
+- avsolatorio/GIST-Embedding-v0
+- avsolatorio/GIST-large-Embedding-v0
+
+I recommend either GIST-Embedding-v0 or GIST-large-Embedding-v0. The latter is slightly more accurate but roughly half as fast.  \
+You can find each model's final evaluation metrics in their model folder, inside `all_results.json`.
+
+
+To get recommended batch sizes for the Alienware, find the Memory Usage (in GB, for fp32), and the Max Tokens for the specified model. These are available on the model page, or aggregated on the MTEB Leaderboard.
 
 Plug them into the below function:
 ```python
-def recommended_batch_size(memory_use, max_tokens):
+def recommended_batch_size(memory_use, max_tokens): # on the Alienware
     from math import log2
-    # derived from GIST-Embedding-v0 sizes
+    # derived from GIST-Embedding-v0 runs
     gist_difficulty = 0.41 * 512
     difficulty = memory_use * max_tokens
 

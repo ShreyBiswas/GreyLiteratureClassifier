@@ -309,7 +309,7 @@ def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files:
                     continue
 
 
-    data = pd.DataFrame(batches,columns=['URL', 'ExtractedTextUntokenized'])
+    data = pd.DataFrame(batches,columns=['URL', 'ExtractedUntokenizedText'])
 
     print(f'\n{len(data)} irrelevant articles loaded. \nRemoving corrupt files...')
 
@@ -344,23 +344,23 @@ def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files:
         pbar.update(1)
         return '\n'.join([pdf.get_page_text(i) for i in range(len(pdf))])
 
-    pdfs = data[data['ExtractedTextUntokenized'].isnull()]
+    pdfs = data[data['ExtractedUntokenizedText'].isnull()]
     if len(pdfs) != 0:
         print('Fetching PDFs where not provided...')
         with tqdm(total=len(pdfs)) as pbar:
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 results = executor.map(extract_pdf_text, pdfs['URL'])
-                pdfs.loc[:, 'ExtractedTextUntokenized'] = list(results)
+                pdfs.loc[:, 'ExtractedUntokenizedText'] = list(results)
         data.update(pdfs)
 
 
-    data.dropna(subset=['ExtractedTextUntokenized'], inplace=True)
+    data.dropna(subset=['ExtractedUntokenizedText'], inplace=True)
     # drop empty strings too
-    data = data[data['ExtractedTextUntokenized'] != '']
+    data = data[data['ExtractedUntokenizedText'] != '']
 
     print('Saving irrelevant data...')
 
-    write_data = data[['URL', 'ExtractedTextUntokenized']]
+    write_data = data[['URL', 'ExtractedUntokenizedText']]
     write_data.columns = ['url', 'text']
     write_data['relevance'] = ['irrelevant']*len(write_data)
     write_data['multiclasses'] = [[]] * len(write_data)
@@ -645,9 +645,9 @@ def main(scrape_studies: bool = False,
         print(f'\n{bold("************ WARNING ************")}\n\n')
         print(f'You are about to clean irrelevant data. This process will remove all irrelevant data from the provided path, and combine them into a single file in level-0.5. ')
         print(f'If the original batch files are not backed up, {bold("they will be lost")}. Only proceed if this is intended.')
-        print(f'\n\n {bold("********************************")}\n\n')
+        print(f'\n\n{bold("*********************************")}\n\n')
         for i in range(9,0,-1):
-            print(f'{bold("Are you sure you want to proceed?")} The process will begin in {i} seconds; {bold("terminate it now if needed")}.',end='\r')
+            print(f'{bold("Are you sure you want to proceed?")} The process will begin in {i} seconds; {bold("terminate it now if needed (Ctrl+C)")}.',end='\r')
             sleep(1)
 
         print('\n\nProceeding...\n\n')

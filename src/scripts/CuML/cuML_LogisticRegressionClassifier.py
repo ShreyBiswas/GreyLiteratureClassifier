@@ -79,7 +79,7 @@ class LogisticRegressionClassifier:
     def load(path):
         from pickle import load
         with open(path, 'rb') as f:
-            return load(f)
+            return load(f) # presaved model
 
     def save(self, path):
         print('Saving classifier...',end='\r')

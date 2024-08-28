@@ -160,7 +160,7 @@ parser.add_argument('--vectorizer', type=str, default='HashingVectorizer', help=
 parser.add_argument('--timer', action='store_true', help='Time the training process')
 parser.add_argument('--embedding-model', type=str, default='avsolatorio/GIST-Embedding-v0', help='Embedding model to use. Only used if --model is EMBEDDINGS or FASTFIT')
 parser.add_argument('--chunk-size', type=int, default=512, help='Size of chunks to process data in. Only used if --model is EMBEDDINGS or FASTFIT')
-parser.add_argument('--samples-per-label', type=int, default=None, help='Number of samples to use per label. Leave excluded for uncapped. Only used if --model is EMBEDDINGS or FASTFIT')
+parser.add_argument('--samples-per-label', type=int, default=None, help='Number of samples to use per label. Leave excluded for uncapped size. Only used if --model is EMBEDDINGS or FASTFIT')
 parser.add_argument('--batch-size', type=int, default=32, help='Batch size for training. Only used if --model is EMBEDDINGS or FASTFIT')
 
 

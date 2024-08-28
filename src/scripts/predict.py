@@ -44,7 +44,7 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
         import time
         start = time.time()
 
-    predictions, probabilities = classifier.predict_threshold(data, threshold=0.4)
+    predictions, probabilities = classifier.predict_threshold(data, threshold=0.5)
 
 
     if timer:
@@ -55,7 +55,7 @@ def test_cuML(model_path='./models/level-0.5/LogisticRegression.pkl', data_path=
 
     print('Evaluating classifier...\n')
 
-    data[f'score-lv{level}'] = probabilities[:, 1]
+    data[f'score-lv{level}'] = probabilities[:, 1] # get rid of irrelevant probabilities, we just want positive class ('relevant')
     data['prediction'] = classifier.boolPredictionsToLabels(predictions)
     print(data['prediction'].value_counts())
 
@@ -118,18 +118,13 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
     data = pd.read_json(data_path, encoding='latin-1')
     data.info()
     data = data[data['relevance'] == 'irrelevant']
-    print('\nData loaded.\n')
 
+    print('\nData loaded.\n')
 
     print('Generating classification predictions...\n')
 
 
-    # was roughly 1.6 files/second on the Alienware
     print('Classifying', len(data), 'files.')
-    s = len(data) / 1.6
-    m, s = divmod(s, 60)
-    h, m = divmod(m, 60)
-    print(bold('\nEstimated time: '), h, ' hours ', m, ' minutes ', int(s), ' seconds\n')
 
     if timer:
         import time
@@ -147,7 +142,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
     print(bold('\n\nPotential new Conservation Evidence:'))
     potential.info()
 
-    print('\n\n',potential[[f'score-lv{level}', 'url']].head(20))
+    print('\n\n',potential[[f'score-lv{level}', 'url', 'relevance']].head(20))
 
     if output_path is not None:
         print(f'Saving {len(potential)} potential results...')
