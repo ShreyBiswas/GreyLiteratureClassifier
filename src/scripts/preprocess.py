@@ -54,13 +54,31 @@ def scrape_studies_func():
 
     from concurrent.futures import ThreadPoolExecutor, as_completed
 
-    n = 12261
+    def get_latest_study_id():
 
-    results = [0 for _ in range(n-2)]
+        print('Accessing Conservation Evidence website...')
+        link = 'https://www.conservationevidence.com/data/studies?terms=&sort=created_at#searchcontainer'
+        response = requests.get(link)
+        print('Parsing the website to obtain the most recent studies...')
 
-    with tqdm(total=n-2) as pbar:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        studies = soup.find_all('td', attrs={'data-head': 'Studies'})
+        l = []
+        for study in studies:
+            l.append(int(study.find('a').get('href').removeprefix('/individual-study/')))
+
+        return max(l)
+
+    print('Retrieving the latest study ID.')
+    n = get_latest_study_id()
+    print(f'Found latest study ID: {n}. Preparing to scrape all studies...')
+
+
+    results = [0 for _ in range(n+10)]
+
+    with tqdm(total=n+10) as pbar:
         with ThreadPoolExecutor() as executor:
-            futures = {executor.submit(make_request, i): i for i in range(2,n)}
+            futures = {executor.submit(make_request, i): i for i in range(n)}
 
             for future in as_completed(futures):
                 i = futures[future]
@@ -296,8 +314,6 @@ def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files:
                     new_data = json.load(f)['Batch']
                     batches.extend(new_data)
 
-                    if remove_files:
-                        os.remove(path + file)
                     pbar.update(len(new_data))
 
                     if len(batches) >= limit_irrelevant and not uncapped:
@@ -368,7 +384,19 @@ def clean_irrelevant(path: str=None, limit_irrelevant: float=None, remove_files:
 
     write_data.to_json('../../data/level-0.5/irrelevant.json', orient='records', indent=4)
 
-    print('Irrelevant data saved.')
+    print(bold('\nIrrelevant data saved.'))
+
+
+    if remove_files:
+        print('Cleaning up processed files...')
+        for file in tqdm(files):
+            try:
+                os.remove(path + file)
+            except FileNotFoundError:
+                print(f'Error removing {path + file}: file not found.')
+                continue
+        print('Removed processed files.')
+
 
 def clean_spreadsheet(path: str=None):
 
@@ -643,12 +671,12 @@ def main(scrape_studies: bool = False,
     if kwargs.get('remove_files', False):
         from time import sleep
         print(f'\n{bold("************ WARNING ************")}\n\n')
-        print(f'You are about to clean irrelevant data. This process will remove all irrelevant data from the provided path, and combine them into a single file in level-0.5. ')
+        print(f'You are about to clean irrelevant data. This process will remove data from the provided irrelevant-path, and combine them into a single file in level-0.5. ')
         print(f'If the original batch files are not backed up, {bold("they will be lost")}. Only proceed if this is intended.')
         print(f'\n\n{bold("*********************************")}\n\n')
-        for i in range(9,0,-1):
-            print(f'{bold("Are you sure you want to proceed?")} The process will begin in {i} seconds; {bold("terminate it now if needed (Ctrl+C)")}.',end='\r')
-            sleep(1)
+        for i in range(9,-1,-1):
+            print(f'{bold("Are you sure you want to proceed?")} The process will begin in {bold(str(i))} seconds; {bold("terminate it now if needed (Ctrl+C)")}.',end='\r')
+            sleep(1.1)
 
         print('\n\nProceeding...\n\n')
 
@@ -686,7 +714,7 @@ def main(scrape_studies: bool = False,
 
 
     if kwargs.get('only_irrelevant', False):
-        clean_irrelevant(irrelevant_path, kwargs.get('limit_irrelevant')) # creates data/level-0.5/irrelevant.json
+        clean_irrelevant(irrelevant_path, kwargs.get('limit_irrelevant'), kwargs.get('remove_files',False)) # creates data/level-0.5/irrelevant.json
         return
 
     #* CLEANING

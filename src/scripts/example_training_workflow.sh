@@ -3,7 +3,7 @@
 python preprocess.py \
     --use-default-paths \
     --scrape-studies \
-    --scrape-spreadsheet \
+    --scrape-spreadsheet
 
 
 python train.py \
@@ -21,7 +21,7 @@ python train.py \
     --output-path=./models/level-2/ \
     --seed 1347 \
     --chunk-size 512 \
-    --batch-size 64 \
+    --batch-size 32 \
     --timer
 
 python train.py \
@@ -31,7 +31,7 @@ python train.py \
     --output-path=./models/level-2/ \
     --seed 1347 \
     --chunk-size 512 \
-    --batch-size 32 \
+    --batch-size 16 \
     --timer
 
 

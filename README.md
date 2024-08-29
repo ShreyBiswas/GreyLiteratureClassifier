@@ -65,11 +65,11 @@ The entire workflow is split into levels. Most folders follow this scheme (e.g i
 - **Level-1** models are extremely performant, less accurate models that take *Level-0.5* data and extracts *Level-1.5* data.
 - **Level-1.5** data has been selected as a potential Conservation-adjacent item.
 - **Level-2** models are more selective but less performance, taking *Level-1.5* data and selecting only the best as *Level-2.5* data.
-- **Level-2.5** data are the most likely candidates to be useful Conservation Evidence.
+- **Level-2.5** data contains the most likely candidates to be useful Conservation Evidence.
 
 More levels can be added for more precise models, or levels can be swapped out.
 
-The best URL candidates from each layer will be saved into `results/level-x.5.csv`, sorted by score. They can be viewed there.
+The best URL candidates from each layer will be saved into `results/level-x.5.csv`, sorted by score. They can be manually viewed there. Pandas JSON files are also saved in `data/level-x.5/potential.json` for further processing.
 
 
 
@@ -82,29 +82,30 @@ Layer: *{} ---> Unprocessed*
 - Download Scraped Evidence from provided Excel file, containing studies and relevant evidence/classification. Save to `data/unprocessed/raw-grey-literature-sources.csv`.
 
 - Download Synopses from [the Conservation Evidence Website](https://www.conservationevidence.com/synopsis/index). Save to `data/unprocessed/synopses/Other/...`.  \
-*Note that I've sorted them into their relevant folder; this isn't needed since classifying into topics isn't implemented, and we can just place them all into 'Other'.*
+*Note that I've sorted them into their relevant folder; this isn't needed since classifying into topics isn't implemented. You can just place them all into 'Other'.*
 
 - Download Irrelevant Data from Kacper's scraper. Save each batch to `data/unprocessed/irrelevant/...`.  \
 *Ideally, these batches should be the same size for accurate loading time estimation, but this isn't necessary.*
 
 Irrelevant batch files should be in the form of a JSON file, with at least the below fields:
+
 ```JSON
 {
-    'Batch':
-        [
-            {
-                'URL': 'https...',
-                'ExtractedTextUntokenized': 'abc...',
-            },
-            {
-                'URL': '...co.uk',
-                'ExtractedTextUntokenized': '...xyz',
-            },
-            ...
-        ]
+    "Batch": [
+        {
+            "URL": "https...",
+            "ExtractedUntokenizedText": "abc..."
+        },
+        {
+            "URL": "...co.uk",
+            "ExtractedUntokenizedText": "...xyz"
+        },
+        ...
+    ]
 }
 ```
-Where ExtractedTextUntokenized is null, I'll try to re-scrape the PDF using the URL and PyMuPDF.
+
+If ExtractedTextUntokenized is null, it'll try to re-scrape the PDF using the URL and PyMuPDF.
 
 ### Data Processing
 
@@ -123,8 +124,9 @@ python preprocess.py \
 
 On subsequent calls, these flags can be removed.
 
-To use custom paths to data folders/files, use the `--irrelevant-path`, `--synopses-path`, `spreadsheet-path`, or `studies-path` parameter to override --use-default-paths.  \
-To override --use-default-paths to skip any of these phases, set its path to None.
+To use custom paths to data folders/files, use the `--irrelevant-path`, `--synopses-path`, `spreadsheet-path`, or `studies-path` parameter to override `--use-default-paths`.  \
+If `--use-default-paths` is not set, unspecified paths will be skipped.  \
+To skip part of the process when using `--use-default-paths`, explicitly set the path to `None`.
 
 For example:
 ```bash
@@ -134,8 +136,8 @@ python preprocess.py \
     --irrelevant_path=None
 ```
 
-When models have been trained and we're simpy performing inference on new data, use the `--only-irrelevant` flag to skip all steps except preparing new data.   \
-Use --remove-files to clean up files that have been processed, and --limit-irrelevant if we don't want to use the entire set of scraped articles. Files excluded due to the limit are left in the folder, and can be incorporated during the next run.
+When models have been trained and we're simpy performing inference on new data, use the `--only-irrelevant` flag to skip all steps except preparing new irrelevant data.   \
+Use --remove-files to clean up and delete files that have been processed, and --limit-irrelevant if we don't want to use the entire set of scraped articles. Files excluded due to the limit are left in the folder, and can be incorporated during the next run.
 
 ```bash
 python preprocess.py \

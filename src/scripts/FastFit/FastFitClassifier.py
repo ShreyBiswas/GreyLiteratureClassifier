@@ -32,7 +32,8 @@ class FastFitClassifier:
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         print(f"Tokenizer loaded with max_length: {self.tokenizer.model_max_length}")
 
-        print(f"Building classifier pipeline...", end="\r")
+        print(f"Building classifier pipeline...")
+        print("NOTE: Ignore the below warning about 'FastFi' not being supported for text-classification; it's not necessary.")
         self.classifier = pipeline(
             "text-classification",
             model=self.model,

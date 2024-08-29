@@ -102,6 +102,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
 
     print('\nInitialising classifier...')
 
+
     from FastFit.FastFitClassifier import FastFitClassifier
 
     classifier = FastFitClassifier(
@@ -154,6 +155,7 @@ def test_embeddings(model_path='./FastFit/level-1/models/relevance/avsolatorio/G
             os.makedirs(os.path.dirname(csv_path))
         if not os.path.exists(os.path.dirname(json_path)):
             os.makedirs(os.path.dirname(json_path))
+
 
         potential[[f'score-lv{level}', 'url']].head(save_top).to_csv(csv_path, index=False)
         print(f'Saved to {csv_path}.\n')
