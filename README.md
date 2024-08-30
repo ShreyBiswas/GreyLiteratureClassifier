@@ -28,13 +28,14 @@ For example, to automatically run `workflow.sh` after setting up the container, 
 
 ### Development with VSCode
 
-1. First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.  \
+1. First, launch a terminal inside the Docker container with `docker compose run --rm --build GreyLiteratureClassifier` as before.
 
 2. Then, open VSCode. Use the Command Palette to run the command `Dev Containers: Attach to Running Container...`, and select `greyliteratureclassifier-GreyLiteratureClassifier-run-xxxxxx`, where xxxxxx is some unique ID associated with this instance.  \
+Note - if you want to link to a specific container in the terminal, the terminal's image ID will be something like *root@9f9fba2accaf*. In the 'Attach to Running Container' list, the available image IDs will be listed on the right side in grey - find the corresponding one.
 
 3. When the new VSCode window opens, you should be deposited into the GreyLiteratureClassifier folder. If not, and instead a window opens to select the working folder, navigate up one level from `root` and manually select `/GreyLiteratureClassifier/`.
 
-4. Now, you can edit files in VSCode, and run them in the terminal with changes instantly reflected (i.e no need to restart the Docker container). The terminal is already in the correct folder, so you can run `sh workflow.sh` or `python preprocess.py ...` as usual.  \
+4. Now, you can edit files in VSCode, and run them in the terminal with changes instantly reflected (i.e no need to restart the Docker container). The terminal is already in the correct folder, so you can run `sh workflow.sh` or `python preprocess.py ...` as usual.
 
 5. When you're done, as before, close the terminal and VSCode window, and run `exit` in the Docker terminal to shut down the container.
 
@@ -108,6 +109,8 @@ Irrelevant batch files should be in the form of a JSON file, with at least the b
 ```
 
 If ExtractedTextUntokenized is null, it'll try to re-scrape the PDF using the URL and PyMuPDF.
+
+You don't need to manually download the studies, as the scraper will do this for you.
 
 ### Data Processing
 
@@ -249,8 +252,8 @@ python predict.py \
     --level 2 \
     --timer
 ```
-*Note: If you get a ValueError: Unrecognized model identifier, try another model.*  \
-*If you get the warning 'The model 'FastFit' is not supported for text-classification', ignore it - it'll still classify perfectly.*
+*If you get a `ValueError: Unrecognized model identifier`, try another model.*  \
+*But, if you get the warning `The model 'FastFit' is not supported for text-classification`, **ignore it** - it'll still classify perfectly.*
 
 The final results can be viewed in `results/level-2.5/urls.csv`. This will be a list of URLs sorted by their predicted relevance score.  \
 For further processing, all data output is stored in `data/level-x.5/potential.json`; so, to add levels after 2.5, read `data/level-2.5/potential.json`.
