@@ -3,7 +3,6 @@
 python preprocess.py \
     --use-default-paths \
     --only-irrelevant \
-    --limit-irrelevant 100000 \
     --remove-files
 
 

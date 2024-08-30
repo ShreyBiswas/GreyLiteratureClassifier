@@ -38,8 +38,10 @@ For example, to automatically run `workflow.sh` after setting up the container, 
 
 5. When you're done, as before, close the terminal and VSCode window, and run `exit` in the Docker terminal to shut down the container.
 
-For recommendations on using each Python program (preprocess/train/predict), scroll further down. For a quick rundown of flags, just run the Python program with `-h`.
+For recommendations on using each Python program (preprocess/train/predict), scroll further down or look throguh `workflow.ipynb`. For a quick rundown of flags, just run the Python program with `-h`.
 
+I recommend opening one container for development, and in another terminal, opening another to run programs - this lets you shut down the 'runner' container without making VSCode lose its connection to the 'dev' container.  \
+Both containers are bind-mounted to the same filesystem, so instantly reflect updates to files.
 
 ---
 
@@ -199,9 +201,9 @@ I recommend either GIST-Embedding-v0 or GIST-large-Embedding-v0. The latter is s
 You can find each model's final evaluation metrics in their model folder, inside `all_results.json`.
 
 
-To get recommended batch sizes for the Alienware, find the Memory Usage (in GB, for fp32), and the Max Tokens for the specified model. These are available on the model page, or aggregated on the MTEB Leaderboard.
+To get recommended batch sizes for the Alienware, find the Memory Usage (in GB, for fp32), and the Max Tokens for the specified model. These are available on the [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard), or sometimes on the model page.
 
-Plug them into the below function:
+Plug them into the below function, also defined in `workflow.ipynb`:
 ```python
 def recommended_batch_size(memory_use, max_tokens): # on the Alienware
     from math import log2
